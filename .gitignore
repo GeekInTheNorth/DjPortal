@@ -1,3 +1,18 @@
 node_modules/
 /test-results/
 
+# Azure Functions
+api/bin/
+api/obj/
+api/.azurefunctions/
+api/__azurite_db*__.json
+api/__blobstorage__/
+api/__queuestorage__/
+
+# .NET
+*.swp
+*.*~
+project.lock.json
+.DS_Store
+*.pyc
+
