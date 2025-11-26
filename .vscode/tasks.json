@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "start-azurite",
+            "type": "shell",
+            "command": "npm",
+            "args": ["run", "start:azurite"],
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^$",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Azurite.*starting.*$",
+                    "endsPattern": "^.*Azurite.*successfully.*$|^.*Azurite.*started.*$"
+                }
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
+        },
+        {
+            "label": "build-functions",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["build"],
+            "options": {
+                "cwd": "${workspaceFolder}/api"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "clean-functions",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["clean"],
+            "options": {
+                "cwd": "${workspaceFolder}/api"
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

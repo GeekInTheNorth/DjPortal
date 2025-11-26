@@ -9,6 +9,13 @@ api/__azurite_db*__.json
 api/__blobstorage__/
 api/__queuestorage__/
 
+# Azurite local storage
+.azurite/
+__azurite_db*__.json
+__blobstorage__/
+__queuestorage__/
+__tablestorage__/
+
 # .NET
 *.swp
 *.*~
