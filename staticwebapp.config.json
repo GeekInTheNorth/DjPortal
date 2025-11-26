@@ -1,14 +1,22 @@
 {
   "navigationFallback": {
-    "rewrite": "/index.html"
+    "rewrite": "/notfound.html"
   },
   "routes": [
+    {
+      "route": "/djportal.html",
+      "allowedRoles": ["authenticated"]
+    },
     {
       "route": "/admin.html",
       "allowedRoles": ["authenticated"]
     }
   ],
   "responseOverrides": {
+    "401": {
+      "statusCode": 302,
+      "redirect": "/.auth/login/aad"
+    },
     "404": {
       "rewrite": "/notfound.html",
       "statusCode": 404
