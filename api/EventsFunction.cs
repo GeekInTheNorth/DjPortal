@@ -21,9 +21,9 @@ public class EventsFunction
         
         var events = new[]
         {
-            new { Id = 1, Name = "Summer Music Festival", Date = "2024-07-15", Venue = "Central Park" },
-            new { Id = 2, Name = "DJ Night", Date = "2024-08-20", Venue = "Club Underground" },
-            new { Id = 3, Name = "Electronic Music Conference", Date = "2024-09-10", Venue = "Convention Center" }
+            new { Id = 1, Name = "Summer Music Festival", Date = "2025-07-15", Venue = "Central Park" },
+            new { Id = 2, Name = "DJ Night", Date = "2025-08-20", Venue = "Club Underground" },
+            new { Id = 3, Name = "Electronic Music Conference", Date = "2025-09-10", Venue = "Convention Center" }
         };
 
         return new OkObjectResult(events);
@@ -34,7 +34,7 @@ public class EventsFunction
     {
         _logger.LogInformation("Creating new event");
         
-        var newEvent = new { Id = 4, Name = "New Event", Date = "2024-10-01", Venue = "TBD", Status = "Created" };
+        var newEvent = new { Id = 4, Name = "New Event", Date = "2025-10-01", Venue = "TBD", Status = "Created" };
 
         return new OkObjectResult(newEvent);
     }
