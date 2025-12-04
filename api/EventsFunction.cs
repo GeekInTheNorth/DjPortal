@@ -1,41 +1,157 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Text;
+using DjPortalApi.Features;
+using DjPortalApi.Features.Events;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace DjPortalApi;
 
-public class EventsFunction
+public class EventsFunction(IEventService eventService) : BaseFunction
 {
-    private readonly ILogger<EventsFunction> _logger;
-
-    public EventsFunction(ILogger<EventsFunction> logger)
-    {
-        _logger = logger;
-    }
-
     [Function("GetEvents")]
-    public IActionResult GetEvents([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events")] HttpRequest req)
+    public async Task<HttpResponseData> GetEvents([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events/list")] HttpRequestData req)
     {
-        _logger.LogInformation("Getting all events");
-        
-        var events = new[]
-        {
-            new { Id = 1, Name = "Summer Music Festival", Date = "2025-07-15", Venue = "Central Park" },
-            new { Id = 2, Name = "DJ Night", Date = "2025-08-20", Venue = "Club Underground" },
-            new { Id = 3, Name = "Electronic Music Conference", Date = "2025-09-10", Venue = "Convention Center" }
-        };
+        var model = await eventService.List(DateTime.Today.AddDays(-7));
+        model = model.Where(x => !x.IsCancelled).OrderByDescending(x => x.Date).ToList();
 
-        return new OkObjectResult(events);
+        return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, model);
     }
 
     [Function("CreateEvent")]
-    public IActionResult CreateEvent([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events/create")] HttpRequest req)
+    public async Task<HttpResponseData> CreateEvent([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events/create")] HttpRequestData req)
     {
-        _logger.LogInformation("Creating new event");
-        
-        var newEvent = new { Id = 4, Name = "New Event", Date = "2025-10-01", Venue = "TBD", Status = "Created" };
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var principal);
+        if (authResponse != null) return authResponse;
 
-        return new OkObjectResult(newEvent);
+        var model = await GetModelAsync<CreateEventModel>(req);
+        model ??= new CreateEventModel();
+
+        var validationResults = new List<ValidationResult>();
+        var context = new ValidationContext(model, null, null);
+        if (!Validator.TryValidateObject(model, context, validationResults, true))
+        {
+            return await CreateResponseAsync(req, System.Net.HttpStatusCode.BadRequest, validationResults);
+        }
+
+        await eventService.Create(model);
+
+        return CreateEmptyResponse(req);
+    }
+
+    [Function("UpdateEvent")]
+    public async Task<HttpResponseData> UpdateEvent([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events/update")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var principal);
+        if (authResponse != null) return authResponse;
+
+        var model = await GetModelAsync<UpdateEventModel>(req);
+        model ??= new UpdateEventModel();
+
+        var validationResults = new List<ValidationResult>();
+        var context = new ValidationContext(model, null, null);
+        if (!Validator.TryValidateObject(model, context, validationResults, true))
+        {
+            return await CreateResponseAsync(req, System.Net.HttpStatusCode.BadRequest, validationResults);
+        }
+
+        await eventService.Update(model);
+
+        return CreateEmptyResponse(req);
+    }
+
+    [Function("DeleteEvent")]
+    public async Task<HttpResponseData> DeleteEvent([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/delete")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var principal);
+        if (authResponse != null) return authResponse;
+
+        if (Guid.TryParse(req.Query["id"], out var guidId))
+        {
+            await eventService.Delete(guidId);
+
+            return CreateEmptyResponse(req);
+        }
+
+        return CreateEmptyResponse(req, System.Net.HttpStatusCode.BadRequest);
+    }
+
+    [Function("DeleteAllEvents")]
+    public async Task<HttpResponseData> DeleteAllEvents([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deleteall")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var principal);
+        if (authResponse != null) return authResponse;
+
+        await eventService.DeleteAndCreateEventIndex();
+
+        return CreateEmptyResponse(req);
+    }
+
+    [Function("DeleteExpiredEvents")]
+    public async Task<HttpResponseData> DeleteExpiredEvents([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deleteexpired")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var principal);
+        if (authResponse != null) return authResponse;
+
+        await eventService.DeleteExpiredEvents();
+
+        return CreateEmptyResponse(req);
+    }
+
+    [Function("DeleteCache")]
+    public HttpResponseData DeleteCache([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deletecache")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var principal);
+        if (authResponse != null) return authResponse;
+
+        eventService.PurgeCache();
+
+        return CreateEmptyResponse(req);
+    }
+
+    [Function("GetCalenderInvite")]
+    public async Task<HttpResponseData> GetCalenderInvite(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events/getinvite/{id}/dance-event.ics")] HttpRequestData req,
+        Guid id)
+    {
+        var thisEvent = await eventService.Get(id);
+        if (thisEvent == null)
+        {
+            var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+            return notFoundResponse;
+        }
+
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("BEGIN:VCALENDAR");
+        stringBuilder.AppendLine("VERSION:2.0");
+        stringBuilder.AppendLine("PRODID:cerocdjmark.azurewebsites.net");
+        stringBuilder.AppendLine("CALSCALE:GREGORIAN");
+        stringBuilder.AppendLine("METHOD:PUBLISH");
+        stringBuilder.AppendLine("BEGIN:VEVENT");
+        stringBuilder.AppendLine($"DTSTART:{thisEvent.StartTime:yyyyMMddTHHmm00}");
+        stringBuilder.AppendLine($"DTEND:{thisEvent.EndTime:yyyyMMddTHHmm00}");
+        stringBuilder.AppendLine($"SUMMARY:{thisEvent.Name}");
+        stringBuilder.AppendLine($"LOCATION:{thisEvent.LocationName}");
+        stringBuilder.AppendLine($"DESCRIPTION:{thisEvent.Name} at {thisEvent.LocationName} ({thisEvent.LocationAddress})");
+        stringBuilder.AppendLine("PRIORITY:3");
+        stringBuilder.AppendLine("END:VEVENT");
+        stringBuilder.AppendLine("END:VCALENDAR");
+
+        var calendarContent = Encoding.UTF8.GetBytes(stringBuilder.ToString());
+        var fileName = "dance-event.ics";
+
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        response.Headers.Add("Content-Type", "text/calendar; charset=utf-8");
+        response.Headers.Add("Content-Disposition", $"inline; filename=\"{fileName}\"");
+        await response.Body.WriteAsync(calendarContent);
+
+        return response;
     }
 }

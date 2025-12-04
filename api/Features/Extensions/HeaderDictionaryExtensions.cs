@@ -1,0 +1,23 @@
+using Microsoft.AspNetCore.Http;
+
+namespace DjPortalApi.Features.Extensions;
+
+public static class HeaderDictionaryExtensions
+{
+    public static void AddOrUpdateHeader(this IHeaderDictionary? headers, string? headerName, string? headerValue)
+    {
+        if (headers is null || string.IsNullOrWhiteSpace(headerName) || string.IsNullOrWhiteSpace(headerValue))
+        {
+            return;
+        }
+
+        if (headers.ContainsKey(headerName))
+        {
+            headers[headerName] = headerValue;
+        }
+        else
+        {
+            headers.Append(headerName, headerValue);
+        }
+    }
+}
