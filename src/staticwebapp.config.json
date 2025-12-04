@@ -13,14 +13,38 @@
       "allowedRoles": ["authenticated"]
     },
     {
+      "route": "/api/events/create",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/events/update",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/events/delete",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/events/deleteall",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/events/deleteexpired",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/events/deletecache",
+      "allowedRoles": ["authenticated"]
+    },
+    {
       "route": "/login",
-      "redirect": "/.auth/login/aad"
+      "redirect": "/.auth/login/github"
     }
   ],
   "responseOverrides": {
     "401": {
       "statusCode": 302,
-      "redirect": "/.auth/login/aad"
+      "redirect": "/.auth/login/github"
     },
     "404": {
       "rewrite": "/notfound.html",
