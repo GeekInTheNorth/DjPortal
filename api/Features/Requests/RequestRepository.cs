@@ -14,9 +14,16 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
             return [];
         }
 
-        var response = await searchClient.SearchAsync<MusicRequest>(new SearchOptions { Size = 100, Filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}'" });
+        try
+        {
+            var response = await searchClient.SearchAsync<MusicRequest>(new SearchOptions { Size = 100, Filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}'" });
 
-        return  response.Value.GetResults().Select(x => x.Document).ToList();
+            return response.Value.GetResults().Select(x => x.Document).ToList();
+        }
+        catch
+        {
+            return [];
+        }
     }
 
     public async Task DeleteAll(Guid eventId)
