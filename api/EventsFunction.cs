@@ -23,7 +23,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     public async Task<HttpResponseData> CreateEvent([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events/create")] HttpRequestData req)
     {
         // Check if user is authenticated
-        var authResponse = RequireAuthentication(req, out var principal);
+        var authResponse = RequireAuthentication(req, out var _);
         if (authResponse != null) return authResponse;
 
         var model = await GetModelAsync<CreateEventModel>(req);
@@ -45,7 +45,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     public async Task<HttpResponseData> UpdateEvent([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events/update")] HttpRequestData req)
     {
         // Check if user is authenticated
-        var authResponse = RequireAuthentication(req, out var principal);
+        var authResponse = RequireAuthentication(req, out var _);
         if (authResponse != null) return authResponse;
 
         var model = await GetModelAsync<UpdateEventModel>(req);
@@ -67,7 +67,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     public async Task<HttpResponseData> DeleteEvent([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/delete")] HttpRequestData req)
     {
         // Check if user is authenticated
-        var authResponse = RequireAuthentication(req, out var principal);
+        var authResponse = RequireAuthentication(req, out var _);
         if (authResponse != null) return authResponse;
 
         if (Guid.TryParse(req.Query["id"], out var guidId))
@@ -84,7 +84,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     public async Task<HttpResponseData> DeleteAllEvents([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deleteall")] HttpRequestData req)
     {
         // Check if user is authenticated
-        var authResponse = RequireAuthentication(req, out var principal);
+        var authResponse = RequireAuthentication(req, out var _);
         if (authResponse != null) return authResponse;
 
         await eventService.DeleteAndCreateEventIndex();
@@ -96,7 +96,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     public async Task<HttpResponseData> DeleteExpiredEvents([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deleteexpired")] HttpRequestData req)
     {
         // Check if user is authenticated
-        var authResponse = RequireAuthentication(req, out var principal);
+        var authResponse = RequireAuthentication(req, out var _);
         if (authResponse != null) return authResponse;
 
         await eventService.DeleteExpiredEvents();
@@ -108,7 +108,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     public HttpResponseData DeleteCache([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deletecache")] HttpRequestData req)
     {
         // Check if user is authenticated
-        var authResponse = RequireAuthentication(req, out var principal);
+        var authResponse = RequireAuthentication(req, out var _);
         if (authResponse != null) return authResponse;
 
         eventService.PurgeCache();

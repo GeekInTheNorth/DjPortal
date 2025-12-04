@@ -66,10 +66,20 @@ public abstract class BaseFunction
         return response;
     }
 
-    protected static HttpResponseData CreateEmptyResponse(HttpRequestData request, HttpStatusCode statusCode = HttpStatusCode.OK)
+    protected static HttpResponseData CreateEmptyResponse(
+        HttpRequestData request, 
+        HttpStatusCode statusCode = HttpStatusCode.OK, 
+        bool setUserCookie = false, 
+        Guid? userId = null)
     {
         var response = request.CreateResponse(statusCode);
         response.Headers.Add("X-Robots-Tag", "noindex, nofollow");
+
+        if (setUserCookie && userId.HasValue)
+        {
+            response.Headers.Add("Set-Cookie", $"{AppConstants.RequestedByCookieName}={userId.Value}; HttpOnly; SameSite=Strict; Expires={DateTime.UtcNow.AddYears(1):R}; Path=/");
+        }
+
         return response;
     }
 

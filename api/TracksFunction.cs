@@ -1,33 +1,32 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using DjPortalApi.Features;
+using DjPortalApi.Features.Tracks;
+using Microsoft.ApplicationInsights;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace DjPortalApi;
 
-public class TracksFunction
+public class TracksFunction(ITrackRepository trackRepository, TelemetryClient telemetryClient) : BaseFunction
 {
-    private readonly ILogger<TracksFunction> _logger;
-
-    public TracksFunction(ILogger<TracksFunction> logger)
+    [Function("TrackSearch")]
+    public async Task<HttpResponseData> TrackSearch([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "tracks/search")] HttpRequestData req)
     {
-        _logger = logger;
+        var query = req.Query["query"];
+
+        LogTrackSearch(query);
+
+        var tracks = await trackRepository.ListAsync(query);
+
+        return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, tracks);
     }
 
-    [Function("GetTracks")]
-    public IActionResult GetTracks([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "tracks")] HttpRequest req)
+    private void LogTrackSearch(string? query)
     {
-        _logger.LogInformation("Getting all tracks");
-        
-        var tracks = new[]
+        if (query is not { Length: >3 })
         {
-            new { Id = 1, Title = "One More Time", Artist = "Daft Punk", Genre = "Electronic", Duration = "5:20" },
-            new { Id = 2, Title = "Around The World", Artist = "Daft Punk", Genre = "Electronic", Duration = "7:09" },
-            new { Id = 3, Title = "Get Lucky", Artist = "Daft Punk", Genre = "Electronic", Duration = "6:09" },
-            new { Id = 4, Title = "Levels", Artist = "Avicii", Genre = "EDM", Duration = "6:17" },
-            new { Id = 5, Title = "Wake Me Up", Artist = "Avicii", Genre = "EDM", Duration = "4:09" }
-        };
+            return;
+        }
 
-        return new OkObjectResult(tracks);
+        telemetryClient.TrackEvent("TrackSearch", new Dictionary<string, string> { { "Query", query } });
     }
 }
