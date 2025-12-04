@@ -15,18 +15,18 @@ public class RequestsFunction
     }
 
     [Function("GetRequests")]
-    public IActionResult GetRequests([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "requests")] HttpRequest req)
+    public IActionResult GetRequests([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "musicrequest/list/")] HttpRequest req)
     {
         _logger.LogInformation("Getting all requests");
         
-        var requests = new[]
-        {
-            new { Id = 1, Song = "Stayin' Alive", Artist = "Bee Gees", RequestedBy = "John", Status = "Pending" },
-            new { Id = 2, Song = "Billie Jean", Artist = "Michael Jackson", RequestedBy = "Jane", Status = "Approved" },
-            new { Id = 3, Song = "Uptown Funk", Artist = "Bruno Mars", RequestedBy = "Bob", Status = "Pending" }
-        };
+        // var requests = new[]
+        // {
+        //     new { Id = 1, Song = "Stayin' Alive", Artist = "Bee Gees", RequestedBy = "John", Status = "Pending" },
+        //     new { Id = 2, Song = "Billie Jean", Artist = "Michael Jackson", RequestedBy = "Jane", Status = "Approved" },
+        //     new { Id = 3, Song = "Uptown Funk", Artist = "Bruno Mars", RequestedBy = "Bob", Status = "Pending" }
+        // };
 
-        return new OkObjectResult(requests);
+        return new OkObjectResult(Array.Empty<string>());
     }
 
     [Function("CreateRequest")]
