@@ -14,7 +14,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     public async Task<HttpResponseData> GetEvents([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events/list")] HttpRequestData req)
     {
         var model = await eventService.List(DateTime.Today.AddDays(-7));
-        model = model.Where(x => !x.IsCancelled).OrderByDescending(x => x.Date).ToList();
+        model = model.Where(x => !x.IsCancelled).OrderBy(x => x.Date).ToList();
 
         return await CreateResponseAsync(req, HttpStatusCode.OK, model);
     }
