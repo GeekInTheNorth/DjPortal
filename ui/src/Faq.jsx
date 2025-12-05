@@ -66,6 +66,19 @@ function Faq(props) {
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="6">
+                        <Accordion.Header>How Do I Install This App on iPhone/iPad?</Accordion.Header>
+                        <Accordion.Body>
+                            <p>To install this app on your iOS device:</p>
+                            <ol>
+                                <li>Open this website in <strong>Safari</strong> (not Chrome or other browsers)</li>
+                                <li>Tap the <strong>Share button</strong> (square with arrow pointing up) at the bottom</li>
+                                <li>Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong></li>
+                                <li>Tap <strong>&quot;Add&quot;</strong> in the top-right corner</li>
+                            </ol>
+                            <p>The app icon will appear on your home screen like a regular app. You can then open it directly without needing to use Safari.</p>
+                        </Accordion.Body>
+                    </Accordion.Item>
+                    <Accordion.Item eventKey="7">
                         <Accordion.Header>Does This Website Use Cookies</Accordion.Header>
                         <Accordion.Body>
                             <p>This website uses a single essential cookie to ensure it functions properly. This cookie does not collect personal data and is not used for advertising or analytics.</p>

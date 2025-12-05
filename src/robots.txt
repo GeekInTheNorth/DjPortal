@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://dj.stott.pro/sitemap.xml
+Sitemap: https://www.stott.pro/sitemap.xml
