@@ -16,7 +16,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         var model = await eventService.List(DateTime.Today.AddDays(-7));
         model = model.Where(x => !x.IsCancelled).OrderByDescending(x => x.Date).ToList();
 
-        return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, model);
+        return await CreateResponseAsync(req, HttpStatusCode.OK, model);
     }
 
     [Function("CreateEvent")]
@@ -33,7 +33,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         var context = new ValidationContext(model, null, null);
         if (!Validator.TryValidateObject(model, context, validationResults, true))
         {
-            return await CreateResponseAsync(req, System.Net.HttpStatusCode.BadRequest, validationResults);
+            return await CreateResponseAsync(req, HttpStatusCode.BadRequest, validationResults);
         }
 
         await eventService.Create(model);
@@ -55,7 +55,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         var context = new ValidationContext(model, null, null);
         if (!Validator.TryValidateObject(model, context, validationResults, true))
         {
-            return await CreateResponseAsync(req, System.Net.HttpStatusCode.BadRequest, validationResults);
+            return await CreateResponseAsync(req, HttpStatusCode.BadRequest, validationResults);
         }
 
         await eventService.Update(model);
@@ -77,7 +77,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
             return CreateEmptyResponse(req);
         }
 
-        return CreateEmptyResponse(req, System.Net.HttpStatusCode.BadRequest);
+        return CreateEmptyResponse(req, HttpStatusCode.BadRequest);
     }
 
     [Function("DeleteAllEvents")]
