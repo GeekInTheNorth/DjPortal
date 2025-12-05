@@ -20,7 +20,7 @@ public class MusicRequestFunction(
         var parseSuccess = Guid.TryParse(req.Query["eventId"], out var eventId);
         if (!parseSuccess)
         {
-            return CreateEmptyResponse(req, System.Net.HttpStatusCode.BadRequest);
+            return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, Array.Empty<MusicRequest>(), !existingUserCookie, userId);
         }
 
         var requests = await requestRepository.Get(eventId);
