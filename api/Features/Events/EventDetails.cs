@@ -10,19 +10,14 @@ public sealed class EventDetails : IEventDetailsData
 
     private DateTime? _endTime;
 
-    [JsonPropertyName("id")]
     public Guid Id { get; set; }
 
-    [JsonPropertyName("name")]
     public string? Name { get; set; }
 
-    [JsonPropertyName("description")]
     public string? Description { get; set; }
 
-    [JsonPropertyName("date")]
     public DateTime Date { get; set; }
 
-    [JsonPropertyName("startTime")]
     public DateTime StartTime 
     { 
         get
@@ -32,7 +27,6 @@ public sealed class EventDetails : IEventDetailsData
         }
     }
 
-    [JsonPropertyName("endTime")]
     public DateTime EndTime 
     { 
         get
@@ -42,44 +36,32 @@ public sealed class EventDetails : IEventDetailsData
         }
     }
 
-    [JsonPropertyName("times")]
     public string? Times { get; set; }
 
-    [JsonPropertyName("locationName")]
     public string? LocationName { get; set; }
 
-    [JsonPropertyName("locationAddress")]
     public string? LocationAddress { get; set; }
 
-    [JsonPropertyName("isRequestable")]
     [JsonConverter(typeof(NullableBooleanJsonConverter))]
     public bool IsRequestable { get; set; }
 
-    [JsonPropertyName("isCancelled")]
     [JsonConverter(typeof(NullableBooleanJsonConverter))]
     public bool IsCancelled { get; set; }
 
-    [JsonPropertyName("generateSchemaData")]
     [JsonConverter(typeof(NullableBooleanJsonConverter))]
     public bool GenerateSchemaData { get; set; }
 
-    [JsonPropertyName("calendarInviteUrl")]
     public string CalendarInviteUrl => $"/events/getinvite/{Id}/dance-event.ics";
 
-    [JsonPropertyName("facebookEventUrl")]
     public string? FacebookEventUrl => string.IsNullOrWhiteSpace(FacebookEventId) ? null : $"https://www.facebook.com/events/{FacebookEventId}";
 
-    [JsonPropertyName("facebookEventId")]
     public string? FacebookEventId { get; set; }
 
-    [JsonPropertyName("isFacebookEvent")]
     [MemberNotNullWhen(true, nameof(FacebookEventId), nameof(FacebookEventUrl))]
     public bool IsFacebookEvent => !string.IsNullOrWhiteSpace(FacebookEventId);
 
-    [JsonPropertyName("tags")]
     public string? Tags { get; set; }
 
-    [JsonPropertyName("tagList")]
     public IEnumerable<EventDetailTag> TagList => GetTags();
 
     private void TimesToDates()

@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text.Json;
+using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker.Http;
 
 namespace DjPortalApi.Features;
@@ -61,7 +63,13 @@ public abstract class BaseFunction
             response.Headers.Add("Set-Cookie", $"{AppConstants.RequestedByCookieName}={userId.Value}; HttpOnly; SameSite=Strict; Expires={DateTime.UtcNow.AddYears(1):R}; Path=/");
         }
 
-        await response.WriteAsJsonAsync(model);
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var serializer = new JsonObjectSerializer(jsonOptions);
+
+        await response.WriteAsJsonAsync(model, serializer);
 
         return response;
     }
