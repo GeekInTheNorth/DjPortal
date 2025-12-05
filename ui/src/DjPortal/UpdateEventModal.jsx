@@ -45,21 +45,22 @@ function UpdateEventModal(props)
     {
         event.preventDefault();
 
-        let params = new URLSearchParams();
-        params.append('id', props.eventData?.id ?? '');
-        params.append('name', eventName);
-        params.append('description', eventDescription);
-        params.append('locationName', locationName);
-        params.append('locationAddress', locationAddress);
-        params.append('date', eventDate);
-        params.append('times', eventTimes);
-        params.append('facebookEventId', facebookEventId);
-        params.append('tags', tags);
-        params.append('isRequestable', isRequestable);
-        params.append('generateSchemaData', generateSchemaData);
-        params.append('isCancelled', isCancelled);
+        const payload = {
+            id: props.eventData?.id ?? '',
+            name: eventName,
+            description: eventDescription,
+            locationName: locationName,
+            locationAddress: locationAddress,
+            date: eventDate,
+            times: eventTimes,
+            facebookEventId: facebookEventId,
+            tags: tags,
+            isRequestable: isRequestable,
+            generateSchemaData: generateSchemaData,
+            isCancelled: isCancelled
+        };
 
-        await axios.post(import.meta.env.VITE_APP_EVENTS_UPDATE, params)
+        await axios.post(import.meta.env.VITE_APP_EVENTS_UPDATE, payload, { headers: { 'Content-Type': 'application/json' } })
             .then(() => setTimeout(() => { getEventCollection(); }, 1000))
             .catch((error) => {
                 console.error('Error creating event: ' + error);

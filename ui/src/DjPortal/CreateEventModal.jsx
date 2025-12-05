@@ -57,20 +57,20 @@ function CreateEventModal()
     const handleSubmitEvent = async (event) =>
     {
         event.preventDefault();
+        const payload = {
+            name: eventName,
+            description: eventDescription,
+            locationName: locationName,
+            locationAddress: locationAddress,
+            date: eventDate,
+            times: eventTimes,
+            facebookEventId: facebookEventId,
+            tags: tags,
+            isRequestable: isRequestable,
+            generateSchemaData: generateSchemaData
+        };
 
-        let params = new URLSearchParams();
-        params.append('name', eventName);
-        params.append('description', eventDescription);
-        params.append('locationName', locationName);
-        params.append('locationAddress', locationAddress);
-        params.append('date', eventDate);
-        params.append('times', eventTimes);
-        params.append('facebookEventId', facebookEventId);
-        params.append('tags', tags);
-        params.append('isRequestable', isRequestable);
-        params.append('generateSchemaData', generateSchemaData);
-
-        await axios.post(import.meta.env.VITE_APP_EVENTS_CREATE, params)
+        await axios.post(import.meta.env.VITE_APP_EVENTS_CREATE, payload, { headers: { 'Content-Type': 'application/json' } })
             .then(() => setTimeout(() => { getEventCollection(); }, 1000))
             .catch((error) => {
                 console.error('Error creating event: ' + error);
