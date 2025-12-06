@@ -13,7 +13,7 @@ function DeleteAllRequests() {
     };
 
     return (
-        <div>
+        <div className='mb-3 border-start border-danger border-3 px-3'>
             <label className='form-label'>Delete all requests for all events.</label><br/>
             <Button variant='danger' onClick={purgeRequests}>Delete All Requests</Button>
         </div>

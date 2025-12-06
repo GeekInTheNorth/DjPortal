@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert, Button, Form } from 'react-bootstrap';
 
 function UploadTrackList()
 {
@@ -51,33 +52,20 @@ function UploadTrackList()
     };
 
     return (
-        <>
-            <h2>Upload Track List</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '1rem' }}>
-                    <input
-                        type="file"
-                        accept=".csv"
-                        onChange={handleFileChange}
-                        disabled={isUploading}
-                    />
-                </div>
-                <div style={{ marginBottom: '1rem' }}>
-                    <button type="submit" disabled={isUploading || !selectedFile}>
-                        {isUploading ? 'Uploading...' : 'Upload CSV'}
-                    </button>
-                </div>
-                {message && (
-                    <div style={{ 
-                        padding: '0.5rem', 
-                        marginTop: '1rem',
-                        color: message.includes('success') ? 'green' : 'red'
-                    }}>
-                        {message}
-                    </div>
-                )}
-            </form>
-        </>
+        <Form onSubmit={handleSubmit} className='mb-3 border-start border-primary border-3 px-3'>
+            <Form.Group controlId="formFile" className="mb-3">
+                <Form.Label>Import Playlist CSV File</Form.Label>
+                <Form.Control type="file" accept=".csv" onChange={handleFileChange} disabled={isUploading} />
+            </Form.Group>
+            <Button variant="primary" type="submit" disabled={isUploading || !selectedFile}>
+                {isUploading ? 'Uploading...' : 'Upload CSV'}
+            </Button>
+            {message && (
+                <Alert variant={message.includes('success') ? 'success' : 'danger'} className="mt-3">
+                    {message}
+                </Alert>
+            )}
+        </Form>
     );
 }
 

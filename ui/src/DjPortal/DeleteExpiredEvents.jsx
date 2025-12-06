@@ -13,7 +13,7 @@ function DeleteExpiredEvents() {
     };
 
     return (
-        <div className='mb-3'>
+        <div className='mb-3 border-start border-danger border-3 px-3'>
             <label className='form-label'>Delete expired events.</label><br/>
             <Button variant='danger' onClick={purgeEvents}>Delete Expired Events</Button>
         </div>
