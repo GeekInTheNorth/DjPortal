@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Azure.Core.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker.Http;
 
 namespace DjPortalApi.Features;
@@ -15,6 +16,19 @@ public abstract class BaseFunction
         var headerValue = request.Headers
             .FirstOrDefault(h => h.Key.Equals("x-ms-client-principal", StringComparison.OrdinalIgnoreCase))
             .Value?
+            .FirstOrDefault();
+
+        return StaticWebAppPrincipal.Parse(headerValue);
+    }
+
+    /// <summary>
+    /// Gets the authenticated user from Azure Static Web Apps headers
+    /// </summary>
+    protected static StaticWebAppPrincipal GetAuthenticatedUser(HttpRequest request)
+    {
+        var headerValue = request.Headers
+            .FirstOrDefault(h => h.Key.Equals("x-ms-client-principal", StringComparison.OrdinalIgnoreCase))
+            .Value
             .FirstOrDefault();
 
         return StaticWebAppPrincipal.Parse(headerValue);

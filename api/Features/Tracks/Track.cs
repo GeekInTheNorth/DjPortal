@@ -1,7 +1,12 @@
-﻿namespace DjPortalApi.Features.Tracks;
+﻿using Azure.Search.Documents.Indexes;
+
+namespace DjPortalApi.Features.Tracks;
 
 public class Track
 {
+    [SearchableField(IsKey = true)]
+    public string? Id { get; set; }
+    
     public string? Title { get; set; }
 
     public string? Artist { get; set; } 

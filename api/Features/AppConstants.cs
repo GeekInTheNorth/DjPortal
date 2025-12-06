@@ -9,4 +9,6 @@ public static class AppConstants
     public const string EventIndexName = "events";
 
     public const string RequestsIndexName = "requests";
+
+    public const string SynonymMapName = "ceroc-dj-synonyms";
 }

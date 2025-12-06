@@ -4,6 +4,7 @@ import CreateEventModal from './CreateEventModal.jsx';
 import DeleteAllRequests from './DeleteAllRequests.jsx';
 import DeleteExpiredEvents from './DeleteExpiredEvents.jsx';
 import DeleteCache from './DeleteCache.jsx';
+import UploadTrackList from './UploadTrackList.jsx';
 
 function AdminTools() {
 
@@ -15,6 +16,7 @@ function AdminTools() {
                 <DeleteCache />
                 <DeleteExpiredEvents />
                 <DeleteAllRequests />
+                <UploadTrackList />
             </Card.Body>
         </Card>
     );
