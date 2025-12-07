@@ -67,7 +67,7 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
 
         if (TryCreateSearchClient(AppConstants.TrackIndexName, out var searchClient))
         {
-            var batch = IndexDocumentsBatch.Upload(items.Select(x => new { x.Title, x.Artist }));
+            var batch = IndexDocumentsBatch.Upload(items.Select(x => new { x.Id, x.Title, x.Artist }));
             await searchClient.IndexDocumentsAsync(batch);
         }
     }
