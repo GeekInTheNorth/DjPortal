@@ -1,7 +1,9 @@
 ﻿using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
+
 using DjPortalApi.Features.Common;
+
 using Microsoft.Extensions.Configuration;
 
 namespace DjPortalApi.Features.Tracks;
@@ -59,6 +61,11 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
         artistField.IsFilterable = true;
         artistField.IsSortable = true;
         artistField.AnalyzerName = LexicalAnalyzerName.StandardAsciiFoldingLucene;
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            items[i].Id = i.ToString("F0");
+        }
 
         await searchIndexClient.CreateIndexAsync(new SearchIndex(AppConstants.TrackIndexName)
         {
