@@ -16,7 +16,6 @@ function CreateEventModal()
     const [facebookEventId, setFacebookEventId] = useState('');
     const [tags, setTags] = useState('');
     const [isRequestable, setIsRequestable] = useState(false);
-    const [generateSchemaData, setGenerateSchemaData] = useState(false);
 
     const { getEventCollection } = useContext(AppContext);
 
@@ -51,7 +50,6 @@ function CreateEventModal()
         setShowModal(false);
         setTags('');
         setIsRequestable(false);
-        setGenerateSchemaData(false);
     }
 
     const handleSubmitEvent = async (event) =>
@@ -66,8 +64,7 @@ function CreateEventModal()
             times: eventTimes,
             facebookEventId: facebookEventId,
             tags: tags,
-            isRequestable: isRequestable,
-            generateSchemaData: generateSchemaData
+            isRequestable: isRequestable
         };
 
         await axios.post(import.meta.env.VITE_APP_EVENTS_CREATE, payload, { headers: { 'Content-Type': 'application/json' } })
@@ -81,11 +78,11 @@ function CreateEventModal()
 
     return (
         <>
-            <div className='mb-3'>
+            <div className='mb-3 border-start border-primary border-3 px-3'>
                 <label className='form-label'>Create a New Event</label><br/>
                 <Button variant='primary' onClick={() => setShowModal(true)}>Create Event</Button>
             </div>
-            <Modal show={showModal} onHide={() => { setShowModal(false); }}>
+            <Modal size='lg' show={showModal} onHide={() => { setShowModal(false); }}>
                 <Form>
                     <Modal.Header closeButton className='py-2'>
                         <Modal.Title>Create Event</Modal.Title>
@@ -131,9 +128,6 @@ function CreateEventModal()
                         </Form.Group>
                         <Form.Group className='mb-3'>
                             <Form.Check type='switch' label='Is this event requestable?' checked={isRequestable} onChange={(event) => setIsRequestable(event.target.checked) } />
-                        </Form.Group>
-                        <Form.Group className='mb-3'>
-                            <Form.Check type='switch' label='Generate Schema.org Data?' checked={generateSchemaData} onChange={(event) => setGenerateSchemaData(event.target.checked) } />
                         </Form.Group>
                     </ModalBody>
                     <Modal.Footer>

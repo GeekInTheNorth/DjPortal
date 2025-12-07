@@ -17,9 +17,6 @@ function UpdateEventModal(props)
     const [facebookEventId, setFacebookEventId] = useState(props.eventData?.facebookEventId ?? '');
     const [tags, setTags] = useState(props.eventData?.tags ?? '');
     const [isRequestable, setIsRequestable] = useState(props.eventData?.isRequestable ?? false);
-    const [generateSchemaData, setGenerateSchemaData] = useState(props.eventData?.generateSchemaData ?? false);
-    const [isCancelled, setIsCancelled] = useState(props.eventData?.isCancelled ?? false);
-
     const { getEventCollection } = useContext(AppContext);
 
     const handleEventNameChange = (event) =>
@@ -55,9 +52,7 @@ function UpdateEventModal(props)
             times: eventTimes,
             facebookEventId: facebookEventId,
             tags: tags,
-            isRequestable: isRequestable,
-            generateSchemaData: generateSchemaData,
-            isCancelled: isCancelled
+            isRequestable: isRequestable
         };
 
         await axios.post(import.meta.env.VITE_APP_EVENTS_UPDATE, payload, { headers: { 'Content-Type': 'application/json' } })
@@ -125,12 +120,6 @@ function UpdateEventModal(props)
                         <Form.Group className='mb-3'>
                             <Form.Check type='switch' label='Is this event requestable?' checked={isRequestable} onChange={(event) => setIsRequestable(event.target.checked) } />
                         </Form.Group>
-                        <Form.Group className='mb-3'>
-                            <Form.Check type='switch' label='Generate Schema.org Data?' checked={generateSchemaData} onChange={(event) => setGenerateSchemaData(event.target.checked) } />
-                        </Form.Group>
-                        <Form.Group className='mb-3'>
-                            <Form.Check type='switch' label='Is this event cancelled?' checked={isCancelled} onChange={(event) => setIsCancelled(event.target.checked) } />
-                        </Form.Group>
                     </ModalBody>
                     <Modal.Footer>
                         <Button variant='primary' type='submit' onClick={handleSubmitEvent}>Update</Button>
@@ -154,9 +143,7 @@ UpdateEventModal.propTypes = {
         facebookEventId: PropTypes.string,
         tagList: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
         tags: PropTypes.string,
-        isRequestable: PropTypes.bool,
-        generateSchemaData: PropTypes.bool,
-        isCancelled: PropTypes.bool
+        isRequestable: PropTypes.bool
     })
 };
 

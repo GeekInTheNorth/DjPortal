@@ -13,7 +13,7 @@ function DeleteCache() {
     };
 
     return (
-        <div className='mb-3'>
+        <div className='mb-3 border-start border-danger border-3 px-3'>
             <label className='form-label'>Delete event cache, use this if you have added or removed an event and you cannot see the changes yet.</label><br/>
             <Button variant='danger' onClick={purgeEvents}>Delete Event Cache</Button>
         </div>
