@@ -60,19 +60,14 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
         artistField.IsSortable = true;
         artistField.AnalyzerName = LexicalAnalyzerName.StandardAsciiFoldingLucene;
 
-        var albumField = new SimpleField(nameof(Track.Album), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
-        var timeField = new SimpleField(nameof(Track.Time), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
-        var bpmField = new SimpleField(nameof(Track.BPM), SearchFieldDataType.Double) { IsFilterable = true, IsSortable = true };
-        var keyField = new SimpleField(nameof(Track.Key), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
-
         await searchIndexClient.CreateIndexAsync(new SearchIndex(AppConstants.TrackIndexName)
         {
-            Fields = { idField, titleField, artistField, albumField, timeField, bpmField, keyField }
+            Fields = { idField, titleField, artistField }
         });
 
         if (TryCreateSearchClient(AppConstants.TrackIndexName, out var searchClient))
         {
-            var batch = IndexDocumentsBatch.Upload(items);
+            var batch = IndexDocumentsBatch.Upload(items.Select(x => new { x.Title, x.Artist }));
             await searchClient.IndexDocumentsAsync(batch);
         }
     }
