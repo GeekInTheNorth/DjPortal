@@ -48,11 +48,12 @@ public sealed class InsightsService(IConfiguration configuration) : IInsightsSer
 
     private ApplicationInsightSettings GetApplicationInsightSettings()
     {
-        var settings = new ApplicationInsightSettings();
-
-        configuration.GetSection("ApplicationInsights").Bind(settings);
-
-        return settings;
+        return new ApplicationInsightSettings
+        {
+            ConnectionString = configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING") ?? string.Empty,
+            AppId = configuration.GetValue<string>("APPLICATIONINSIGHTS_APPID") ?? string.Empty,
+            ApiKey = configuration.GetValue<string>("APPLICATIONINSIGHTS_APIKEY") ?? string.Empty
+        };
     }
 
     private static IEnumerable<TrackSearchTerm> GetSearchTerms(InsightsResponse? insightsResponse)
