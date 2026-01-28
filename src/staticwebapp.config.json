@@ -11,6 +11,19 @@
   },
   "routes": [
     {
+      "route": "/api/events/list*",
+      "methods": [
+        "GET",
+        "OPTIONS"
+      ],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Cache-Control": "no-store, max-age=0"
+      }
+    },
+    {
       "route": "/djportal.html",
       "allowedRoles": [
         "authenticated"
@@ -21,14 +34,6 @@
       "allowedRoles": [
         "authenticated"
       ]
-    },
-    {
-      "route": "/api/events/list/",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-      }
     },
     {
       "route": "/api/events/create",
