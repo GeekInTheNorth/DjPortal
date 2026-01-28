@@ -1,19 +1,29 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/admin.html", "/djportal.html", "/notfound.html", "*.{css,js,jpg,png,gif,svg,ico}", "/api/*"]
+    "exclude": [
+      "/admin.html",
+      "/djportal.html",
+      "/notfound.html",
+      "*.{css,js,jpg,png,gif,svg,ico}",
+      "/api/*"
+    ]
   },
   "routes": [
     {
       "route": "/djportal.html",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/admin.html",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
-      "route": "/api/events/list*",
+      "route": "/api/events/list/",
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -22,35 +32,51 @@
     },
     {
       "route": "/api/events/create",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/api/events/update",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/api/events/delete",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/api/events/deleteall",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/api/events/deleteexpired",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/api/events/deletecache",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/api/insights/searchterms",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/api/musicrequest/updatestatus",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/login",
