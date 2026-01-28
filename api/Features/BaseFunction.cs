@@ -116,4 +116,12 @@ public abstract class BaseFunction
             throw new InvalidOperationException("Failed to parse request model", ex);
         }
     }
+
+    protected static void AllowCors(HttpResponseData response)
+    {
+        // Allow CORS from any origin for this endpoint
+        response.Headers.Add("Access-Control-Allow-Origin", "*");
+        response.Headers.Add("Access-Control-Allow-Methods", "GET");
+        response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
+    }
 }

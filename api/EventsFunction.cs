@@ -16,7 +16,11 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         var model = await eventService.List(DateTime.Today.AddDays(-7));
         model = model.Where(x => !x.IsCancelled).OrderBy(x => x.Date).ToList();
 
-        return await CreateResponseAsync(req, HttpStatusCode.OK, model);
+        var response = await CreateResponseAsync(req, HttpStatusCode.OK, model);
+        
+        AllowCors(response);
+
+        return response;
     }
 
     [Function("CreateEvent")]

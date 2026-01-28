@@ -23,7 +23,11 @@ public class TracksFunction(ITrackRepository trackRepository, TelemetryClient te
 
         var tracks = await trackRepository.ListAsync(query);
 
-        return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, tracks);
+        var response = await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, tracks);
+
+        AllowCors(response);
+
+        return response;
     }
 
     [Function("TrackCsvUpload")]
