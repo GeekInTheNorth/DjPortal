@@ -11,6 +11,14 @@
   },
   "routes": [
     {
+      "route": "/index.html",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      }
+    },
+    {
       "route": "/djportal.html",
       "allowedRoles": [
         "authenticated"
