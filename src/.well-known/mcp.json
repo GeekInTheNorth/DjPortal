@@ -1,16 +1,16 @@
 {
   "mcpVersion": "2025.11.25",
   "info": {
-    "name": "Ceroc DJ Request Engine",
+    "name": "DJ Mark Stott, Ceroc Music Requests",
     "version": "1.0.0",
-    "description": "Live event and track request system for Ceroc dance events."
+    "description": "Live event and track request system for Ceroc dance events where DJ Mark Stott is performing."
   },
   "capabilities": {
     "tools": {
       "list": [
         {
           "name": "list_ceroc_events",
-          "description": "Returns a list of upcoming Ceroc dance events where requests are being accepted.",
+          "description": "Returns a list of upcoming Ceroc dance events DJ Mark Stott is performing.",
           "inputSchema": {
             "type": "object",
             "properties": {}
@@ -20,7 +20,7 @@
         },
         {
           "name": "search_ceroc_tracks",
-          "description": "Searches the DJ's music library for a specific track to see if it is available for request.",
+          "description": "Searches DJ Mark's music library for a specific track to see if it is available for request.",
           "inputSchema": {
             "type": "object",
             "properties": {
