@@ -5,9 +5,20 @@
 ### Get Events
 
 GET {{rooturl}}/api/events/list
-x-ms-client-principal: {{fakeprincipal}}
 
-###
+### Options Events
+
+OPTIONS {{rooturl}}/api/events/list
+
+### Get Tracks
+
+@trackSearchTerm david guetta
+
+GET {{rooturl}}/api/tracks/search?query={{trackSearchTerm}}
+
+### Options Tracks
+
+OPTIONS {{rooturl}}/api/tracks/search?query={{trackSearchTerm}}
 
 ### Delete Cache
 DELETE {{rooturl}}/api/events/deletecache

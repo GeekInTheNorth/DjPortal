@@ -14,6 +14,14 @@ namespace DjPortalApi;
 
 public class TracksFunction(ITrackRepository trackRepository, TelemetryClient telemetryClient) : BaseFunction
 {
+    [Function("TrackSearchOptions")]
+    public HttpResponseData TrackSearchOptions([HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "tracks/search")] HttpRequestData req)
+    {
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        AllowCors(response);
+        return response;
+    }
+
     [Function("TrackSearch")]
     public async Task<HttpResponseData> TrackSearch([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "tracks/search")] HttpRequestData req)
     {

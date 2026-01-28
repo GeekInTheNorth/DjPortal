@@ -10,6 +10,14 @@ namespace DjPortalApi;
 
 public class EventsFunction(IEventService eventService) : BaseFunction
 {
+    [Function("GetEventsOptions")]
+    public HttpResponseData GetEventsOptions([HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "events/list")] HttpRequestData req)
+    {
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        AllowCors(response);
+        return response;
+    }
+
     [Function("GetEvents")]
     public async Task<HttpResponseData> GetEvents([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events/list")] HttpRequestData req)
     {
