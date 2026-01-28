@@ -3,11 +3,6 @@
     "rewrite": "/index.html",
     "exclude": ["/admin.html", "/djportal.html", "/notfound.html", "*.{css,js,jpg,png,gif,svg,ico}", "/api/*"]
   },
-  "globalHeaders": {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
-  },
   "routes": [
     {
       "route": "/djportal.html",
@@ -16,6 +11,14 @@
     {
       "route": "/admin.html",
       "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/events/list*",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      }
     },
     {
       "route": "/api/events/create",
