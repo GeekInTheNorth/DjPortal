@@ -1,0 +1,43 @@
+{
+  "mcpVersion": "2025.11.25",
+  "info": {
+    "name": "Ceroc DJ Request Engine",
+    "version": "1.0.0",
+    "description": "Live event and track request system for Ceroc dance events."
+  },
+  "capabilities": {
+    "tools": {
+      "list": [
+        {
+          "name": "list_ceroc_events",
+          "description": "Returns a list of upcoming Ceroc dance events where requests are being accepted.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "endpoint": "https://dj.stott.pro/api/events/list",
+          "method": "GET"
+        },
+        {
+          "name": "search_ceroc_tracks",
+          "description": "Searches the DJ's music library for a specific track to see if it is available for request.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "The name of the artist or track to search for."
+              }
+            },
+            "required": ["query"]
+          },
+          "endpoint": "https://dj.stott.pro/api/tracks/search",
+          "method": "GET",
+          "parameterMapping": {
+            "query": "query"
+          }
+        }
+      ]
+    }
+  }
+}
