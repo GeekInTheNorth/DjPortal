@@ -3,14 +3,14 @@
   "info": {
     "name": "DJ Mark Stott, Ceroc Music Requests",
     "version": "1.0.0",
-    "description": "Live event and track request system for Ceroc dance events where DJ Mark Stott is performing."
+    "description": "Live event and track request system for Ceroc and Modern Jive dance events where DJ Mark Stott is performing."
   },
   "capabilities": {
     "tools": {
       "list": [
         {
           "name": "list_ceroc_events",
-          "description": "Returns a list of upcoming Ceroc dance events DJ Mark Stott is performing.",
+          "description": "Fetches a real-time list of upcoming Ceroc dance freestyles and class nights where DJ Mark Stott is playing.",
           "inputSchema": {
             "type": "object",
             "properties": {}
@@ -20,13 +20,13 @@
         },
         {
           "name": "search_ceroc_tracks",
-          "description": "Searches DJ Mark's music library for a specific track to see if it is available for request.",
+          "description": "Searches DJ Mark's library for dance-legal tracks (110-150 BPM). Use this to see if a song can be requested.",
           "inputSchema": {
             "type": "object",
             "properties": {
               "query": {
                 "type": "string",
-                "description": "The name of the artist or track to search for."
+                "description": "Artist name or track title."
               }
             },
             "required": ["query"]
