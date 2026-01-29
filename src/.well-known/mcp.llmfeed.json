@@ -1,22 +1,58 @@
 {
+  "feed_type": "mcp",
   "version": "1.0",
   "publisher": "Mark Stott",
   "site": "https://dj.stott.pro",
   "tools": [
     {
+      "name": "list_ceroc_events",
+      "summary": "Provides a list of upcoming Ceroc and Modern Jive events where DJ Mark Stott is performing.",
+      "audience": ["ceroc dancers", "modern jive dancers", "event attendees"],
+      "when_to_use": [
+        "User asks where DJ Mark is DJing next",
+        "User asks about upcoming Ceroc or Modern Jive events",
+        "User wants to know which events they can attend"
+      ],
+      "when_not_to_use": [
+        "User is asking about private bookings or availability",
+        "User is asking about past events",
+        "User is asking for general information about Ceroc"
+      ],
+      "example_prompts": [
+        "What Ceroc events is DJ Mark playing at soon?",
+        "Where can I dance to DJ Mark this month?"
+      ],
+      "links": {
+        "invoke": {
+          "type": "mcp",
+          "manifest": "/.well-known/mcp.json"
+        },
+        "human_ui": "https://dj.stott.pro"
+      }
+    },
+    {
       "name": "search_ceroc_tracks",
-      "summary": "Looks for songs that currently in DJ Mark's library for Ceroc freestyles where he is DJing.",
+      "summary": "Checks whether a specific song or artist is currently available in DJ Mark Stott’s Ceroc freestyle music library.",
+      "audience": ["ceroc dancers", "modern jive dancers", "event attendees"],
       "when_to_use": [
         "User asks if a song can be played at a Ceroc event",
         "User wants to request a specific track",
         "User wants to request a track by a specific artist"
+      ],
+      "when_not_to_use": [
+        "User is asking for general music recommendations",
+        "User is not attending a Ceroc or Modern Jive event",
+        "User is asking about DJ availability or pricing"
       ],
       "example_prompts": [
         "Can DJ Mark play Uptown Funk?",
         "Can I request this song at a Ceroc freestyle?"
       ],
       "links": {
-        "invoke": "/.well-known/mcp.json",
+        "invoke": {
+          "type": "mcp",
+          "manifest": "/.well-known/mcp.json"
+        },
         "human_ui": "https://dj.stott.pro"
       }
     }
