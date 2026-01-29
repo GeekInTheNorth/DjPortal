@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "publisher": "Mark Stott",
+  "site": "https://dj.stott.pro",
+  "tools": [
+    {
+      "name": "search_ceroc_tracks",
+      "summary": "Looks for songs that currently in DJ Mark's library for Ceroc freestyles where he is DJing.",
+      "when_to_use": [
+        "User asks if a song can be played at a Ceroc event",
+        "User wants to request a specific track",
+        "User wants to request a track by a specific artist"
+      ],
+      "example_prompts": [
+        "Can DJ Mark play Uptown Funk?",
+        "Can I request this song at a Ceroc freestyle?"
+      ],
+      "links": {
+        "invoke": "/.well-known/mcp.json",
+        "human_ui": "https://dj.stott.pro"
+      }
+    }
+  ]
+}
