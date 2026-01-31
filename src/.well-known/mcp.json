@@ -1,0 +1,43 @@
+{
+  "mcpVersion": "2025.11.25",
+  "info": {
+    "name": "DJ Mark Stott, Ceroc Music Requests",
+    "version": "1.0.0",
+    "description": "Live event and track request system for Ceroc and Modern Jive dance events where DJ Mark Stott is performing."
+  },
+  "capabilities": {
+    "tools": {
+      "list": [
+        {
+          "name": "list_ceroc_events",
+          "description": "Fetches a real-time list of upcoming Ceroc dance freestyles and class nights where DJ Mark Stott is playing.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "endpoint": "https://dj.stott.pro/api/events/list",
+          "method": "GET"
+        },
+        {
+          "name": "search_ceroc_tracks",
+          "description": "Searches DJ Mark's library for dance-legal tracks (110-150 BPM). Use this to see if a song can be requested.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Artist name or track title."
+              }
+            },
+            "required": ["query"]
+          },
+          "endpoint": "https://dj.stott.pro/api/tracks/search",
+          "method": "GET",
+          "parameterMapping": {
+            "query": "query"
+          }
+        }
+      ]
+    }
+  }
+}

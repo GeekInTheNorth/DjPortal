@@ -10,13 +10,25 @@ namespace DjPortalApi;
 
 public class EventsFunction(IEventService eventService) : BaseFunction
 {
+    [Function("GetEventsOptions")]
+    public HttpResponseData GetEventsOptions([HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "events/list")] HttpRequestData req)
+    {
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        AllowCors(response);
+        return response;
+    }
+
     [Function("GetEvents")]
     public async Task<HttpResponseData> GetEvents([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events/list")] HttpRequestData req)
     {
         var model = await eventService.List(DateTime.Today.AddDays(-7));
         model = model.Where(x => !x.IsCancelled).OrderBy(x => x.Date).ToList();
 
-        return await CreateResponseAsync(req, HttpStatusCode.OK, model);
+        var response = await CreateResponseAsync(req, HttpStatusCode.OK, model);
+        
+        AllowCors(response);
+
+        return response;
     }
 
     [Function("CreateEvent")]
