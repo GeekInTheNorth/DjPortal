@@ -113,6 +113,24 @@ public class MusicRequestFunction(
         return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK);
     }
 
+    [Function("DeleteRequest")]
+    public async Task<HttpResponseData> DeleteRequest([HttpTrigger(AuthorizationLevel.Function, "delete", Route = "musicrequest/delete")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var _);
+        if (authResponse != null) return authResponse;
+
+        var parseSuccess = Guid.TryParse(req.Query["requestId"], out var requestId);
+        if (!parseSuccess)
+        {
+            return CreateEmptyResponse(req, System.Net.HttpStatusCode.BadRequest);
+        }
+
+        await requestRepository.Delete(requestId);
+
+        return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK);
+    }
+
     [Function("DeleteAllRequests")]
     public async Task<HttpResponseData> DeleteAllRequests([HttpTrigger(AuthorizationLevel.Function, "delete", Route = "musicrequest/deleteall")] HttpRequestData req)
     {

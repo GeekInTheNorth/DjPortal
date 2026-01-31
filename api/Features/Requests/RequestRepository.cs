@@ -26,6 +26,16 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         }
     }
 
+    public async Task Delete(Guid requestId)
+    {
+        if (!TryCreateSearchClient(AppConstants.RequestsIndexName, out var searchClient))
+        {
+            return;
+        }
+
+        await searchClient.DeleteDocumentsAsync("Id", [requestId.ToString()]);
+    }
+
     public async Task DeleteAll(Guid eventId)
     {
         if (!TryCreateSearchClient(AppConstants.RequestsIndexName, out var searchClient))
