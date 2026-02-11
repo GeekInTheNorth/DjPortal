@@ -7,10 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "clean-dotnet": "node -e \"var rimraf = require('rimraf'); rimraf.native('../src/static/index*.*', { glob: true}).then(function () { console.log('files removed'); });\"",
-    "copy-to-dotnet": "npx copyfiles -f ./dist/assets/**/* ../src/static",
-    "build-dotnet": "npm run clean-dotnet && npm run build && npm run copy-to-dotnet"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
