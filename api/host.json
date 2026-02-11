@@ -8,5 +8,17 @@
             },
             "enableLiveMetricsFilters": true
         }
+    },
+    "extensions": {
+        "http": {
+            "routePrefix": "api"
+        }
+    },
+    "cors": {
+        "allowedOrigins": [
+            "http://localhost:4280",
+            "http://127.0.0.1:4280"
+        ],
+        "supportCredentials": true
     }
 }

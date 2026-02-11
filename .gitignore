@@ -1,6 +1,9 @@
 node_modules/
 /test-results/
 
+# Claude Code
+.claude/
+
 # Azure Functions
 api/bin/
 api/obj/

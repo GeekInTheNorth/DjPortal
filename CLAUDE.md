@@ -162,6 +162,20 @@ Configured in [src/staticwebapp.config.json](src/staticwebapp.config.json):
 - Development: Local API URLs
 - Production ([ui/.env.production](ui/.env.production)): Relative `/api` paths
 
+### Security & CORS
+
+**CORS Configuration** ([api/host.json](api/host.json)):
+- CORS settings allow `http://localhost:4280` and `http://127.0.0.1:4280` for local development only
+- In production, Azure Static Web Apps acts as a reverse proxy, making all requests same-origin
+- The Functions API is not directly exposed in production - all requests go through the Static Web Apps gateway
+- CORS headers are only needed for local development when frontend (port 4280) and API (port 7071) run on different origins
+
+**Production Security Model:**
+- Frontend and API both served from `https://yourapp.azurestaticapps.net`
+- No cross-origin requests = no CORS needed
+- Authentication/authorization handled by [staticwebapp.config.json](ui/public/staticwebapp.config.json)
+- Functions API accessed only through Static Web Apps proxy at `/api/*`
+
 ## Common Tasks
 
 ### Adding a New API Endpoint

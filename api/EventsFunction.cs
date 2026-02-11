@@ -13,9 +13,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     [Function("GetEventsOptions")]
     public HttpResponseData GetEventsOptions([HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "events/list")] HttpRequestData req)
     {
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        AllowCors(response);
-        return response;
+        return req.CreateResponse(HttpStatusCode.OK);
     }
 
     [Function("GetEvents")]
@@ -24,11 +22,7 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         var model = await eventService.List(DateTime.Today.AddDays(-7));
         model = model.Where(x => !x.IsCancelled).OrderBy(x => x.Date).ToList();
 
-        var response = await CreateResponseAsync(req, HttpStatusCode.OK, model);
-        
-        AllowCors(response);
-
-        return response;
+        return await CreateResponseAsync(req, HttpStatusCode.OK, model);
     }
 
     [Function("CreateEvent")]

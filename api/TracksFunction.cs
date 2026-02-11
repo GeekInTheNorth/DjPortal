@@ -17,9 +17,7 @@ public class TracksFunction(ITrackRepository trackRepository, TelemetryClient te
     [Function("TrackSearchOptions")]
     public HttpResponseData TrackSearchOptions([HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "tracks/search")] HttpRequestData req)
     {
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        AllowCors(response);
-        return response;
+        return req.CreateResponse(HttpStatusCode.OK);
     }
 
     [Function("TrackSearch")]
@@ -31,11 +29,7 @@ public class TracksFunction(ITrackRepository trackRepository, TelemetryClient te
 
         var tracks = await trackRepository.ListAsync(query);
 
-        var response = await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, tracks);
-
-        AllowCors(response);
-
-        return response;
+        return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, tracks);
     }
 
     [Function("TrackCsvUpload")]
