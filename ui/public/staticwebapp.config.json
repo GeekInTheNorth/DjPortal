@@ -1,7 +1,7 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/admin.html", "/djportal.html", "/notfound.html", "/events/*.html", "*.{css,js,jpg,png,gif,svg,ico}", "/api/*"]
+    "exclude": ["/admin.html", "/djportal.html", "/notfound.html", "/events/*.html", "*.{css,js,jpg,png,gif,svg,ico,xml}", "/api/*"]
   },
   "routes": [
     {
@@ -49,6 +49,9 @@
       "redirect": "/.auth/login/github"
     }
   ],
+  "mimeTypes": {
+    ".xml": "application/xml"
+  },
   "responseOverrides": {
     "401": {
       "statusCode": 302,
