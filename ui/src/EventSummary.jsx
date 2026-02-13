@@ -20,6 +20,7 @@ function EventSummary(props) {
     const [eventLocationName, setEventLocationName] = useState('');
     const [eventLocationAddress, setEventLocationAddress] = useState('');
     const [eventFacebookUrl, setEventFacebookUrl] = useState('');
+    const [eventPageUrl, setEventPageUrl] = useState('');
     const [tagList, setTagList] = useState([]);
 
     useEffect(() => {
@@ -37,6 +38,7 @@ function EventSummary(props) {
             setEventCalendarUrl(props.eventData.calendarInviteUrl);
             setEventFacebookUrl(props.eventData.facebookEventUrl);
             setTagList(props.eventData.tagList ?? []);
+            setEventPageUrl(props.eventData.eventPageUrl);
         }
     }
 
@@ -56,7 +58,7 @@ function EventSummary(props) {
     const renderFooterCta = () => {
         return(
             <Card.Footer>
-                <Button variant='primary' onClick={handleCtaClick}>Request a Track</Button>
+                <a href={eventPageUrl} className='btn btn-primary'>Request a Track</a>
                 {renderCalendarCta()}
                 {renderFacebookCta()}
             </Card.Footer>
@@ -165,6 +167,7 @@ EventSummary.propTypes = {
         isRequestable: PropTypes.bool,
         calendarInviteUrl: PropTypes.string,
         facebookEventUrl: PropTypes.string,
+        eventPageUrl: PropTypes.string,
         tagList: PropTypes.arrayOf(PropTypes.shape({
             name: PropTypes.string,
             colour: PropTypes.string,

@@ -51,6 +51,8 @@ public sealed class EventDetails : IEventDetailsData
     [JsonConverter(typeof(NullableBooleanJsonConverter))]
     public bool GenerateSchemaData { get; set; }
 
+    public string EventPageUrl => $"/events/{Date:yyyy-MM-dd}";
+
     public string CalendarInviteUrl => $"/api/events/getinvite/{Id}/dance-event.ics";
 
     public string? FacebookEventUrl => string.IsNullOrWhiteSpace(FacebookEventId) ? null : $"https://www.facebook.com/events/{FacebookEventId}";

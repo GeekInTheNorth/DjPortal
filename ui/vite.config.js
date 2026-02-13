@@ -7,7 +7,7 @@ function eventPagesDevPlugin() {
     name: 'event-pages-dev',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        const match = req.url?.match(/^\/events\/(\d{4}-\d{2}-\d{2})\.html/);
+        const match = req.url?.match(/^\/events\/(\d{4}-\d{2}-\d{2})/);
         if (!match) return next();
 
         const dateStr = match[1];

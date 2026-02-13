@@ -1,6 +1,6 @@
 ### Variables
-@rooturl http://localhost:7050
-@fakeprincipal eyAidXNlcklkIjogInRlc3QtdXNlciIsICJ1c2VyRGV0YWlscyI6ICJUZXN0IFVzZXIiLCAiaWRlbnRpdHlQcm92aWRlciI6ICJUZXN0IiwgInVzZXJSb2xlcyI6IFsiYWRtaW4iXSB9
+@rooturl = http://localhost:7071
+@fakeprincipal = eyAidXNlcklkIjogInRlc3QtdXNlciIsICJ1c2VyRGV0YWlscyI6ICJUZXN0IFVzZXIiLCAiaWRlbnRpdHlQcm92aWRlciI6ICJUZXN0IiwgInVzZXJSb2xlcyI6IFsiYWRtaW4iXSB9
 
 ### Get Events
 
@@ -12,7 +12,7 @@ OPTIONS {{rooturl}}/api/events/list
 
 ### Get Tracks
 
-@trackSearchTerm david guetta
+@trackSearchTerm = david guetta
 
 GET {{rooturl}}/api/tracks/search?query={{trackSearchTerm}}
 
