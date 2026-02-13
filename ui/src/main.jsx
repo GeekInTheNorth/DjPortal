@@ -7,6 +7,7 @@ import './App.css'
 import DjPortal from './DjPortal/DjPortal.jsx';
 import AdminTools from './DjPortal/AdminTools.jsx';
 import AdminEventList from './DjPortal/AdminEventList.jsx';
+import EventPageApp from './EventPageApp.jsx';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -33,5 +34,12 @@ if (djAdminElement) {
             <AdminEventList />
             <AdminTools />
         </AppProvider>
+    );
+}
+
+const eventPageElement = document.getElementById('eventpage');
+if (eventPageElement) {
+    ReactDOM.createRoot(eventPageElement).render(
+        <EventPageApp />
     );
 }

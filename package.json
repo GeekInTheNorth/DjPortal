@@ -5,7 +5,8 @@
     "start:app": "cd ui && npm run dev",
     "start:api": "cd api && dotnet build && func start --port 7071",
     "start:azurite": "azurite --silent --location .azurite --debug .azurite\\debug.log",
-    "dev": "npx swa start http://localhost:4280 --api-location ./api --run \"cd ui && npm run dev\""
+    "dev": "npx swa start http://localhost:4280 --api-location ./api --run \"cd ui && npm run dev\"",
+    "build": "cd ui && npm run build"
   },
   "devDependencies": {
     "@azure/static-web-apps-cli": "^2.0.8",
