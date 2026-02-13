@@ -152,6 +152,7 @@ function generateEventPageHtml(event, assetRefs) {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>${escapeHtml(pageTitle)}</title>
     <meta name="description" content="${escapeHtml(pageDescription)}" />
     <meta name="keywords" content="Modern Jive, Ceroc, Partner Dancing, Ceroc Yorkshire, ${escapeHtml(event.locationName)}, music requests, song requests, DJ requests" />
