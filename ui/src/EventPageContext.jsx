@@ -6,16 +6,29 @@ import { AppContext } from './AppContext.jsx';
 export const EventPageProvider = ({ children }) => {
 
     const eventData = window.__EVENT_DATA__ || {};
-    const [selectedEvent] = useState(eventData);
+    const [selectedEvent, setSelectedEvent] = useState(eventData);
     const [requestCollection, setRequestCollection] = useState([]);
-    const [eventCollection] = useState(eventData.id ? [eventData] : []);
+    const [eventCollection, setEventCollection] = useState(eventData.id ? [eventData] : []);
     const [selectedView] = useState('details');
 
     useEffect(() => {
-        if (selectedEvent && selectedEvent.id) {
-            getMusicRequests(selectedEvent);
+        if (eventData.id) {
+            refreshEvent(eventData.id);
+            getMusicRequests(eventData);
         }
     }, []);
+
+    const refreshEvent = async (eventId) => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_APP_EVENTS_GET}${eventId}`);
+            if (response.data) {
+                setSelectedEvent(response.data);
+                setEventCollection([response.data]);
+            }
+        } catch {
+            console.error('Failed to refresh event data.');
+        }
+    };
 
     const getMusicRequests = async (event) => {
         setRequestCollection([]);

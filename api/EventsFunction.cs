@@ -25,6 +25,19 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         return await CreateResponseAsync(req, HttpStatusCode.OK, model);
     }
 
+    [Function("GetEvent")]
+    public async Task<HttpResponseData> GetEvent([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events/byid/{id}")] HttpRequestData req, Guid id)
+    {
+        var thisEvent = await eventService.Get(id);
+        if (thisEvent == null)
+        {
+            var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+            return notFoundResponse;
+        }
+
+        return await CreateResponseAsync(req, HttpStatusCode.OK, thisEvent);
+    }
+
     [Function("CreateEvent")]
     public async Task<HttpResponseData> CreateEvent([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events/create")] HttpRequestData req)
     {
