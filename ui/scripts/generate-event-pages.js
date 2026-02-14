@@ -253,40 +253,115 @@ function generateFaqHtml() {
     <div class="card mb-3">
         <div class="card-header">FAQ</div>
         <div class="card-body">
-            <h3 class="fs-5">Will My Request Get Played?</h3>
-            <p>Requests will be played on a best endevours basis. Just because a request is made, I can not promise that it will be played.</p>
-            <p>In order to get played, a track must have a relatively stable beat between 110 and 150 beats per minute and must not be excessively offensive. Over the course of a 4 hour freestyle, I will planning to play between 8 and 16 requests and work to fit them into one of 4 journeys. If there are too many requests of a similar speed, then a selection will be made.</p>
-
-            <h3 class="fs-5">What if you don't have my song?</h3>
-            <p>If I do not have the song you have requested, I will preview that song online and if it matches our criteria, then I will attempt to purchase that song so I can play it.</p>
-
-            <h3 class="fs-5">Can I request more than one track?</h3>
-            <p>Yes, but in order to be fair to other dancers, your requests will be treated as options and I will attempt to honour just one of them.</p>
-
-            <h3 class="fs-5">Why are you buying tracks instead of streaming them?</h3>
-            <p>Artists make very little from streaming services and content on streaming services is not guaranteed to always be on that service. By purchasing a track, I support the artist and ensure that I have access to that track indefinitely.</p>
-
-            <h3 class="fs-5">Who Are These Events For?</h3>
-            <p>These Events are aimed at people who are into social partner dancing. Our specific style is known as Ceroc, but also commonly as Modern Jive.</p>
-
-            <h3 class="fs-5">Where Can I Learn To Dance?</h3>
-            <p><a href="https://www.facebook.com/CerocYorkshire" target="_blank" rel="nofollow">Ceroc Yorkshire</a> host 3 regular class nights every week across the West Yorkshire region at venues in Tadcaster, Leeds and Ilkley. Doors open at 7:30pm, the beginners class starts at 7:45pm and the intermediate class starts at 9:00pm.</p>
-            <p>For more information, do checkout the <a href="https://www.facebook.com/CerocYorkshire" target="_blank" rel="nofollow">Ceroc Yorkshire</a> facebook page as well as the national <a href='https://www.ceroc.com/' rel='nofollow'>Ceroc</a> website.</p>
-
-            <h3 class="fs-5">How Do I Install This App on iPhone/iPad?</h3>
-            <p>To install this app on your iOS device:</p>
-            <ol>
-                <li>Open this website in <strong>Safari</strong> (not Chrome or other browsers)</li>
-                <li>Tap the <strong>Share button</strong> (square with arrow pointing up) at the bottom</li>
-                <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                <li>Tap <strong>"Add"</strong> in the top-right corner</li>
-            </ol>
-            <p>The app icon will appear on your home screen like a regular app. You can then open it directly without needing to use Safari.</p>
-
-            <h3 class="fs-5">Does This Website Use Cookies</h3>
-            <p>This website uses a single essential cookie to ensure it functions properly. This cookie does not collect personal data and is not used for advertising or analytics.</p>
-            <p>By continuing to use this site, you agree to the use of this essential cookie.</p>
-            <p>The cookie is called <em>cydjr.requestor</em>. It is used to link you to requests you have made and contains only a randomly generated identifier. The cookie expires after 365 days.</p>
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq0" aria-expanded="true" aria-controls="faq0">
+                            Will My Request Get Played?
+                        </button>
+                    </h2>
+                    <div id="faq0" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>Requests will be played on a best endevours basis. Just because a request is made, I can not promise that it will be played.</p>
+                            <p>In order to get played, a track must have a relatively stable beat between 110 and 150 beats per minute and must not be excessively offensive. Over the course of a 4 hour freestyle, I will planning to play between 8 and 16 requests and work to fit them into one of 4 journeys. If there are too many requests of a similar speed, then a selection will be made.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="false" aria-controls="faq1">
+                            What if you don't have my song?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>If I do not have the song you have requested, I will preview that song online and if it matches our criteria, then I will attempt to purchase that song so I can play it.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                            Can I request more than one track?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>Yes, but in order to be fair to other dancers, your requests will be treated as options and I will attempt to honour just one of them.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                            Why are you buying tracks instead of streaming them?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>Artists make very little from streaming services and content on streaming services is not guaranteed to always be on that service. By purchasing a track, I support the artist and ensure that I have access to that track indefinitely.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                            Who Are These Events For?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>These Events are aimed at people who are into social partner dancing. Our specific style is known as Ceroc, but also commonly as Modern Jive.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5" aria-expanded="false" aria-controls="faq5">
+                            Where Can I Learn To Dance?
+                        </button>
+                    </h2>
+                    <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p><a href="https://www.facebook.com/CerocYorkshire" target="_blank" rel="nofollow">Ceroc Yorkshire</a> host 3 regular class nights every week across the West Yorkshire region at venues in Tadcaster, Leeds and Ilkley. Doors open at 7:30pm, the beginners class starts at 7:45pm and the intermediate class starts at 9:00pm.</p>
+                            <p>For more information, do checkout the <a href="https://www.facebook.com/CerocYorkshire" target="_blank" rel="nofollow">Ceroc Yorkshire</a> facebook page as well as the national <a href='https://www.ceroc.com/' rel='nofollow'>Ceroc</a> website.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6" aria-expanded="false" aria-controls="faq6">
+                            How Do I Install This App on iPhone/iPad?
+                        </button>
+                    </h2>
+                    <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>To install this app on your iOS device:</p>
+                            <ol>
+                                <li>Open this website in <strong>Safari</strong> (not Chrome or other browsers)</li>
+                                <li>Tap the <strong>Share button</strong> (square with arrow pointing up) at the bottom</li>
+                                <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                                <li>Tap <strong>"Add"</strong> in the top-right corner</li>
+                            </ol>
+                            <p>The app icon will appear on your home screen like a regular app. You can then open it directly without needing to use Safari.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7" aria-expanded="false" aria-controls="faq7">
+                            Does This Website Use Cookies
+                        </button>
+                    </h2>
+                    <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>This website uses a single essential cookie to ensure it functions properly. This cookie does not collect personal data and is not used for advertising or analytics.</p>
+                            <p>By continuing to use this site, you agree to the use of this essential cookie.</p>
+                            <p>The cookie is called <em>cydjr.requestor</em>. It is used to link you to requests you have made and contains only a randomly generated identifier. The cookie expires after 365 days.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>`;
 }
@@ -394,6 +469,14 @@ async function main() {
             eventListDivPattern,
             `<div class="container pt-3" id="event-list">\n${eventListHtml}${faqHtml}\n</div>`
         );
+
+        // Inject Bootstrap JS before closing body tag for accordion functionality
+        const bodyEndPattern = /<\/body>/;
+        indexHtmlContent = indexHtmlContent.replace(
+            bodyEndPattern,
+            `<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>\n</body>`
+        );
+        console.log('  Injected Bootstrap JS for accordion functionality');
 
         // Write the modified HTML back
         fs.writeFileSync(indexHtmlPath, indexHtmlContent, 'utf-8');
