@@ -216,24 +216,102 @@ ${assetRefs.jsPath ? `<script type="module" crossorigin src="${assetRefs.jsPath}
 </html>`;
 }
 
+function generateEventListHtml(events) {
+    if (!Array.isArray(events) || events.length === 0) {
+        return '';
+    }
+
+    return events.map(event => {
+        const formattedDate = formatDate(event.date);
+        const dateFilename = formatDateForFilename(event.date);
+
+        // Build footer buttons
+        let footerContent = '';
+        if (event.isRequestable) {
+            footerContent += `<a href="/events/${dateFilename}.html" class="btn btn-primary">Request a Track</a>`;
+        }
+        footerContent += renderCalendarButton(event);
+        footerContent += renderFacebookButton(event);
+
+        return `
+    <div class="card mb-3">
+        <div class="card-header fw-bold">${escapeHtml(event.name)}</div>
+        <div class="card-body">
+            <p class="card-text">${escapeHtml(event.description)}</p>
+            <p class="card-text">${escapeHtml(formattedDate)}, ${escapeHtml(event.times)}</p>
+            <p class="card-text">${escapeHtml(event.locationName)}<br/>${escapeHtml(event.locationAddress)}</p>
+            ${renderRequestStatus(event)}
+            ${renderTags(event)}
+        </div>
+        ${footerContent ? `<div class="card-footer">\n            ${footerContent}\n        </div>` : ''}
+    </div>`;
+    }).join('\n');
+}
+
+function generateFaqHtml() {
+    return `
+    <div class="card mb-3">
+        <div class="card-header">FAQ</div>
+        <div class="card-body">
+            <h3 class="fs-5">Will My Request Get Played?</h3>
+            <p>Requests will be played on a best endevours basis. Just because a request is made, I can not promise that it will be played.</p>
+            <p>In order to get played, a track must have a relatively stable beat between 110 and 150 beats per minute and must not be excessively offensive. Over the course of a 4 hour freestyle, I will planning to play between 8 and 16 requests and work to fit them into one of 4 journeys. If there are too many requests of a similar speed, then a selection will be made.</p>
+
+            <h3 class="fs-5">What if you don't have my song?</h3>
+            <p>If I do not have the song you have requested, I will preview that song online and if it matches our criteria, then I will attempt to purchase that song so I can play it.</p>
+
+            <h3 class="fs-5">Can I request more than one track?</h3>
+            <p>Yes, but in order to be fair to other dancers, your requests will be treated as options and I will attempt to honour just one of them.</p>
+
+            <h3 class="fs-5">Why are you buying tracks instead of streaming them?</h3>
+            <p>Artists make very little from streaming services and content on streaming services is not guaranteed to always be on that service. By purchasing a track, I support the artist and ensure that I have access to that track indefinitely.</p>
+
+            <h3 class="fs-5">Who Are These Events For?</h3>
+            <p>These Events are aimed at people who are into social partner dancing. Our specific style is known as Ceroc, but also commonly as Modern Jive.</p>
+
+            <h3 class="fs-5">Where Can I Learn To Dance?</h3>
+            <p><a href="https://www.facebook.com/CerocYorkshire" target="_blank" rel="nofollow">Ceroc Yorkshire</a> host 3 regular class nights every week across the West Yorkshire region at venues in Tadcaster, Leeds and Ilkley. Doors open at 7:30pm, the beginners class starts at 7:45pm and the intermediate class starts at 9:00pm.</p>
+            <p>For more information, do checkout the <a href="https://www.facebook.com/CerocYorkshire" target="_blank" rel="nofollow">Ceroc Yorkshire</a> facebook page as well as the national <a href='https://www.ceroc.com/' rel='nofollow'>Ceroc</a> website.</p>
+
+            <h3 class="fs-5">How Do I Install This App on iPhone/iPad?</h3>
+            <p>To install this app on your iOS device:</p>
+            <ol>
+                <li>Open this website in <strong>Safari</strong> (not Chrome or other browsers)</li>
+                <li>Tap the <strong>Share button</strong> (square with arrow pointing up) at the bottom</li>
+                <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                <li>Tap <strong>"Add"</strong> in the top-right corner</li>
+            </ol>
+            <p>The app icon will appear on your home screen like a regular app. You can then open it directly without needing to use Safari.</p>
+
+            <h3 class="fs-5">Does This Website Use Cookies</h3>
+            <p>This website uses a single essential cookie to ensure it functions properly. This cookie does not collect personal data and is not used for advertising or analytics.</p>
+            <p>By continuing to use this site, you agree to the use of this essential cookie.</p>
+            <p>The cookie is called <em>cydjr.requestor</em>. It is used to link you to requests you have made and contains only a randomly generated identifier. The cookie expires after 365 days.</p>
+        </div>
+    </div>`;
+}
+
 async function main() {
     console.log('Generating static event pages...');
 
-    // Read built index.html to extract asset references
+    // Check that dist directory exists
     const indexHtmlPath = path.join(DIST_DIR, 'index.html');
     if (!fs.existsSync(indexHtmlPath)) {
         console.error('Error: dist/index.html not found. Run "vite build" first.');
         process.exit(1);
     }
 
-    const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
-    const assetRefs = extractAssetRefs(indexHtml);
+    // Extract asset references from djportal.html (which still has React)
+    // since index.html is now static-only
+    const djportalHtmlPath = path.join(DIST_DIR, 'djportal.html');
+    const djportalHtml = fs.readFileSync(djportalHtmlPath, 'utf-8');
+    const assetRefs = extractAssetRefs(djportalHtml);
 
     if (!assetRefs.jsPath) {
-        console.warn('Warning: Could not find JS asset reference in index.html');
+        console.warn('Warning: Could not find JS asset reference in djportal.html');
     }
     if (!assetRefs.cssPath) {
-        console.warn('Warning: Could not find CSS asset reference in index.html');
+        console.warn('Warning: Could not find CSS asset reference in djportal.html');
     }
 
     console.log(`Assets: JS=${assetRefs.jsPath}, CSS=${assetRefs.cssPath}`);
@@ -289,6 +367,40 @@ async function main() {
 
     fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemap, 'utf-8');
     console.log(`Generated sitemap.xml with ${sitemapEntries.length} URL(s).`);
+
+    // Inject static event listings and CSS into index.html
+    console.log('Injecting static content into index.html...');
+
+    const eventListHtml = generateEventListHtml(events);
+    const faqHtml = generateFaqHtml();
+
+    // Read the built index.html
+    let indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf-8');
+
+    // Inject CSS link in the head (since we removed React from index.html)
+    if (assetRefs.cssPath) {
+        const headEndPattern = /<\/head>/;
+        indexHtmlContent = indexHtmlContent.replace(
+            headEndPattern,
+            `    <link rel="stylesheet" crossorigin href="${assetRefs.cssPath}">\n</head>`
+        );
+        console.log(`  Injected CSS: ${assetRefs.cssPath}`);
+    }
+
+    // Find and replace the event-list div with static content
+    const eventListDivPattern = /<div class="container pt-3" id="event-list">\s*<!-- Static event list and FAQ will be injected here by generate-event-pages\.js during build -->\s*<\/div>/;
+    if (eventListDivPattern.test(indexHtmlContent)) {
+        indexHtmlContent = indexHtmlContent.replace(
+            eventListDivPattern,
+            `<div class="container pt-3" id="event-list">\n${eventListHtml}${faqHtml}\n</div>`
+        );
+
+        // Write the modified HTML back
+        fs.writeFileSync(indexHtmlPath, indexHtmlContent, 'utf-8');
+        console.log('Successfully injected static event listings into index.html');
+    } else {
+        console.warn('Warning: Could not find event-list div pattern in index.html. Static content not injected.');
+    }
 }
 
 main().catch(error => {
