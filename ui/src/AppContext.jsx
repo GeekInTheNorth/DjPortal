@@ -9,7 +9,6 @@ export const AppProvider = ({ children }) => {
     const [eventCollection, setEventCollection] = useState([]);
     const [requestCollection, setRequestCollection] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState({});
-    const [selectedView, setSelectedView] = useState('list');
     
     useEffect(() => { getEventCollection() }, []);
     
@@ -55,17 +54,15 @@ export const AppProvider = ({ children }) => {
     const selectEvent = (event) => {
         setSelectedEvent(event);
         getMusicRequests(event);
-        setSelectedView('details');
     };
 
     const deselectEvent = () => {
         setSelectedEvent({});
         setRequestCollection([]);
-        setSelectedView('list');
     };
 
     return (
-        <AppContext.Provider value={{ eventCollection, selectedEvent, selectedView, requestCollection, getEventCollection, selectEvent, deselectEvent, getMusicRequests }}>
+        <AppContext.Provider value={{ eventCollection, selectedEvent, requestCollection, getEventCollection, selectEvent, deselectEvent, getMusicRequests }}>
             {children}
         </AppContext.Provider>
     )

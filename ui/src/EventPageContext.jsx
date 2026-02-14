@@ -9,7 +9,6 @@ export const EventPageProvider = ({ children }) => {
     const [selectedEvent, setSelectedEvent] = useState(eventData);
     const [requestCollection, setRequestCollection] = useState([]);
     const [eventCollection, setEventCollection] = useState(eventData.id ? [eventData] : []);
-    const [selectedView] = useState('details');
 
     useEffect(() => {
         if (eventData.id) {
@@ -53,7 +52,7 @@ export const EventPageProvider = ({ children }) => {
     const getEventCollection = () => {};
 
     return (
-        <AppContext.Provider value={{ eventCollection, selectedEvent, selectedView, requestCollection, getEventCollection, selectEvent, deselectEvent, getMusicRequests }}>
+        <AppContext.Provider value={{ eventCollection, selectedEvent, requestCollection, getEventCollection, selectEvent, deselectEvent, getMusicRequests }}>
             {children}
         </AppContext.Provider>
     )
