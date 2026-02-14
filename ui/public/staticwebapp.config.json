@@ -37,6 +37,10 @@
       "allowedRoles": ["authenticated"]
     },
     {
+      "route": "/api/deployment/rebuild",
+      "allowedRoles": ["authenticated"]
+    },
+    {
       "route": "/api/insights/searchterms",
       "allowedRoles": ["authenticated"]
     },

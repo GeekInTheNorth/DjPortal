@@ -5,6 +5,7 @@ import DeleteAllRequests from './DeleteAllRequests.jsx';
 import DeleteExpiredEvents from './DeleteExpiredEvents.jsx';
 import DeleteCache from './DeleteCache.jsx';
 import UploadTrackList from './UploadTrackList.jsx';
+import TriggerRebuild from './TriggerRebuild.jsx';
 
 function AdminTools() {
 
@@ -17,6 +18,7 @@ function AdminTools() {
                 <DeleteExpiredEvents />
                 <DeleteAllRequests />
                 <UploadTrackList />
+                <TriggerRebuild />
             </Card.Body>
         </Card>
     );

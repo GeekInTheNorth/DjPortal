@@ -1,3 +1,4 @@
+using DjPortalApi.Features.Deployment;
 using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Insights;
 using DjPortalApi.Features.Requests;
@@ -18,6 +19,7 @@ builder.Services
     .AddHttpClient();
 
 builder.Services
+    .AddScoped<IDeploymentService, DeploymentService>()
     .AddScoped<IEventRepository, EventRepository>()
     .AddScoped<IEventService, EventService>()
     .AddScoped<IInsightsService, InsightsService>()
