@@ -435,7 +435,7 @@ async function main() {
 
     for (const event of events) {
         const dateFilename = formatDateForFilename(event.date);
-        sitemapEntries.push(`  <url>\n    <loc>${SITE_BASE_URL}/events/${dateFilename}.html</loc>\n    <lastmod>${today}</lastmod>\n  </url>`);
+        sitemapEntries.push(`  <url>\n    <loc>${SITE_BASE_URL}/events/${dateFilename}</loc>\n    <lastmod>${today}</lastmod>\n  </url>`);
     }
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries.join('\n')}\n</urlset>\n`;
