@@ -110,8 +110,8 @@ function UpdateEventModal(props)
                             <div className='form-text'>Enter the times in <em>20:00 - 23:30</em> format.</div>
                         </Form.Group>
                         <Form.Group className='mb-3'>
-                            <Form.Label>Facebook Event ID</Form.Label>
-                            <Form.Control type='text' placeholder='e.g. 000000000000000' value={facebookEventId} onChange={(event) => setFacebookEventId(event.target.value)} />
+                            <Form.Label>Facebook Event URL</Form.Label>
+                            <Form.Control type='text' placeholder='e.g. https://www.facebook.com/events/...' value={facebookEventId} onChange={(event) => setFacebookEventId(event.target.value)} />
                         </Form.Group>
                         <Form.Group className='mb-3'>
                             <Form.Label>Tags</Form.Label>

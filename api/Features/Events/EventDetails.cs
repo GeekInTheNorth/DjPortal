@@ -55,7 +55,7 @@ public sealed class EventDetails : IEventDetailsData
 
     public string CalendarInviteUrl => $"/api/events/getinvite/{Id}/dance-event.ics";
 
-    public string? FacebookEventUrl => string.IsNullOrWhiteSpace(FacebookEventId) ? null : $"https://www.facebook.com/events/{FacebookEventId}";
+    public string? FacebookEventUrl => Uri.IsWellFormedUriString(FacebookEventId, UriKind.Absolute) ? FacebookEventId : null;
 
     public string? FacebookEventId { get; set; }
 
