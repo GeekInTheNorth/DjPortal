@@ -132,7 +132,7 @@ function buildSchemaJsonLd(event) {
             "@type": "Person",
             "name": "DJ Mark"
         },
-        "url": `${SITE_BASE_URL}/events/${formatDateForFilename(event.date)}.html`
+        "url": `${SITE_BASE_URL}/events/${formatDateForFilename(event.date)}`
     };
 
     return JSON.stringify(schema, null, 2);
@@ -156,7 +156,7 @@ function generateEventPageHtml(event, assetRefs) {
     <title>${escapeHtml(pageTitle)}</title>
     <meta name="description" content="${escapeHtml(pageDescription)}" />
     <meta name="keywords" content="Modern Jive, Ceroc, Partner Dancing, Ceroc Yorkshire, ${escapeHtml(event.locationName)}, music requests, song requests, DJ requests" />
-    <meta property="og:url" content="${SITE_BASE_URL}/events/${dateFilename}.html" />
+    <meta property="og:url" content="${SITE_BASE_URL}/events/${dateFilename}" />
     <meta property="og:title" content="${escapeHtml(pageTitle)}" />
     <meta property="og:description" content="${escapeHtml(pageDescription)}" />
     <meta property="og:type" content="website" />
@@ -164,7 +164,7 @@ function generateEventPageHtml(event, assetRefs) {
     <meta name="twitter:site" content="@GeekInTheNorth" />
     <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
     <meta name="twitter:description" content="${escapeHtml(pageDescription)}" />
-    <link rel="canonical" href="${SITE_BASE_URL}/events/${dateFilename}.html" />
+    <link rel="canonical" href="${SITE_BASE_URL}/events/${dateFilename}" />
     <meta name="viewport" content="maximum-scale=5.0, initial-scale=1.0, width=device-width">
     <meta name="theme-color" content="#212529">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -228,7 +228,7 @@ function generateEventListHtml(events) {
         // Build footer buttons
         let footerContent = '';
         if (event.isRequestable) {
-            footerContent += `<a href="/events/${dateFilename}.html" class="btn btn-primary">Request a Track</a>`;
+            footerContent += `<a href="/events/${dateFilename}" class="btn btn-primary">Request a Track</a>`;
         }
         footerContent += renderCalendarButton(event);
         footerContent += renderFacebookButton(event);
@@ -421,7 +421,7 @@ async function main() {
         const html = generateEventPageHtml(event, assetRefs);
 
         fs.writeFileSync(outputPath, html, 'utf-8');
-        console.log(`  Generated: events/${dateFilename}.html - ${event.name}`);
+        console.log(`  Generated: events/${dateFilename} - ${event.name}`);
         generated++;
     }
 
