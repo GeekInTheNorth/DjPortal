@@ -66,6 +66,20 @@ public sealed class EventDetails : IEventDetailsData
 
     public IEnumerable<EventDetailTag> TagList => GetTags();
 
+    public string ImageUrl
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Name)) return "/images/banner.png";
+            if (Name.Contains("energise", StringComparison.OrdinalIgnoreCase)) return "/images/energise.jpg";
+            if (Name.Contains("january", StringComparison.OrdinalIgnoreCase)) return "/images/january.png";
+            if (Name.Contains("february", StringComparison.OrdinalIgnoreCase)) return "/images/february.png";
+            if (Name.Contains("spooktacular", StringComparison.OrdinalIgnoreCase)) return "/images/spooktacular.jpg";
+
+            return "/images/banner.png";
+        }
+    }
+
     private void TimesToDates()
     {
         if (string.IsNullOrWhiteSpace(Times) || _startTime.HasValue || _endTime.HasValue)
