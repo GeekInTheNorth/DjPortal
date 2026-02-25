@@ -51,13 +51,6 @@ function formatDateISO(dateString) {
     return date.toISOString().split('T')[0];
 }
 
-function getTagColour(tag) {
-    const lowerTag = tag.toLowerCase();
-    if (lowerTag === 'dj mark') return 'success';
-    if (lowerTag.startsWith('valentine') || lowerTag.endsWith('ball')) return 'danger';
-    return 'primary';
-}
-
 function renderTags(event) {
     if (!event.tagList || event.tagList.length === 0) return '';
 
@@ -192,8 +185,9 @@ ${buildSchemaJsonLd(event)}
 
 <div class="container pt-3">
     <div class="card mb-3">
-        <div class="card-header fw-bold">${escapeHtml(event.name)}</div>
+        ${event.imageUrl ? `<img src="${escapeHtml(event.imageUrl)}" class="card-img-top" alt="${escapeHtml(event.name)}">` : ''}
         <div class="card-body">
+            <h5 class="card-title fw-bold">${escapeHtml(event.name)}</h5>
             <p class="card-text">${escapeHtml(event.description)}</p>
             <p class="card-text">${escapeHtml(formattedDate)}, ${escapeHtml(event.times)}</p>
             <p class="card-text">${escapeHtml(event.locationName)}<br/>${escapeHtml(event.locationAddress)}</p>
@@ -235,8 +229,9 @@ function generateEventListHtml(events) {
 
         return `
     <div class="card mb-3">
-        <div class="card-header fw-bold">${escapeHtml(event.name)}</div>
+        ${event.imageUrl ? `<img src="${escapeHtml(event.imageUrl)}" class="card-img-top" alt="${escapeHtml(event.name)}">` : ''}
         <div class="card-body">
+            <h5 class="card-title fw-bold">${escapeHtml(event.name)}</h5>
             <p class="card-text">${escapeHtml(event.description)}</p>
             <p class="card-text">${escapeHtml(formattedDate)}, ${escapeHtml(event.times)}</p>
             <p class="card-text">${escapeHtml(event.locationName)}<br/>${escapeHtml(event.locationAddress)}</p>
