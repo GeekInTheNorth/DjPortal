@@ -160,10 +160,14 @@ function generateEventPageHtml(event, assetRefs) {
     <meta property="og:title" content="${escapeHtml(pageTitle)}" />
     <meta property="og:description" content="${escapeHtml(pageDescription)}" />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:image" content="${SITE_BASE_URL}/images/social.png" />
     <meta name="twitter:creator" content="@GeekInTheNorth" />
     <meta name="twitter:site" content="@GeekInTheNorth" />
     <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
     <meta name="twitter:description" content="${escapeHtml(pageDescription)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="${SITE_BASE_URL}/images/social.png" />
     <link rel="canonical" href="${SITE_BASE_URL}/events/${dateFilename}" />
     <meta name="viewport" content="maximum-scale=5.0, initial-scale=1.0, width=device-width">
     <meta name="theme-color" content="#212529">
