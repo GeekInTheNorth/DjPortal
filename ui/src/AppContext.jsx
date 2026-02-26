@@ -33,8 +33,6 @@ export const AppProvider = ({ children }) => {
         };
     
     const getMusicRequests = async (event) => {
-        setRequestCollection([]);
-
         setTimeout(() => {
             axios.get(import.meta.env.VITE_APP_REQUESTS_LIST, { params: { eventId: event.id } })
                 .then((response) => {
