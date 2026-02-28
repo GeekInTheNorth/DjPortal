@@ -27,7 +27,7 @@ public class MusicRequestFunction(
         var comparer = new MusicRequestComparer();
         var uniqueRequests = requests.Distinct(comparer).OrderBy(x => x.StatusOrder).ThenBy(x => x.UserName).ThenBy(x => x.TrackName).ToList();
 
-        var user =GetAuthenticatedUser(req);
+        var user = GetAuthenticatedUser(req);
         if (user is not { IsAuthenticated: true })
         {
             foreach (var musicRequest in uniqueRequests)

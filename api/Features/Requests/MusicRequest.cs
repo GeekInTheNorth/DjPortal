@@ -31,6 +31,7 @@ public sealed class MusicRequest
         "Queued" => 1,
         "Pending" => 2,
         "Played" => 3,
-        _ => 4
+        "AlreadyServed" => 4,
+        _ => 5
     };
 }

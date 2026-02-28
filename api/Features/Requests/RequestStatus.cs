@@ -4,5 +4,6 @@ public enum RequestStatus
 {
     Pending,
     Queued,
-    Played
+    Played,
+    AlreadyServed
 }

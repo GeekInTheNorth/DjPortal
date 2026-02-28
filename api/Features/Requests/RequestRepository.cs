@@ -65,15 +65,37 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         {
             return;
         }
-        
+
         var musicRequest = await searchClient.GetDocumentAsync<MusicRequest>(requestId.ToString());
-        if (musicRequest?.Value == null)
+        var musicResquest = musicRequest?.Value;
+        if (musicResquest == null)
         {
             return;
         }
 
-        musicRequest.Value.Status = status.ToString();
-        await searchClient.UploadDocumentsAsync([musicRequest.Value]);
+        musicResquest.Status = status.ToString();
+        await searchClient.UploadDocumentsAsync([musicResquest]);
+
+        if (status == RequestStatus.Played)
+        {
+            var userId = musicResquest.UserId;
+            var eventId = musicResquest.EventId;
+            var filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}' and {nameof(MusicRequest.UserId)} eq '{userId}' and {nameof(MusicRequest.Status)} eq '{RequestStatus.Pending}'";
+            var response = await searchClient.SearchAsync<MusicRequest>(new SearchOptions { Size = 100, Filter = filter });
+            var otherPendingRequests = response.Value.GetResults()
+                .Select(x => x.Document)
+                .Where(x => x.Id != requestId)
+                .ToList();
+
+            if (otherPendingRequests.Count > 0)
+            {
+                foreach (var req in otherPendingRequests)
+                {
+                    req.Status = RequestStatus.AlreadyServed.ToString();
+                }
+                await searchClient.UploadDocumentsAsync(otherPendingRequests);
+            }
+        }
     }
 
     public async Task DeleteAndCreateRequestIndex()

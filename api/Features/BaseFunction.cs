@@ -52,7 +52,7 @@ public abstract class BaseFunction
     protected static bool GetUserCookieOrDefault(HttpRequestData request, out Guid userId)
     {
         userId = Guid.NewGuid();
-        var cookie = request.Cookies.FirstOrDefault(x => AppConstants.RequestsIndexName.Equals(x.Name, StringComparison.InvariantCultureIgnoreCase));
+        var cookie = request.Cookies.FirstOrDefault(x => AppConstants.RequestedByCookieName.Equals(x.Name, StringComparison.InvariantCultureIgnoreCase));
         if (!string.IsNullOrWhiteSpace(cookie?.Value) && Guid.TryParse(cookie?.Value, out var parsedUserId))
         {
             userId = parsedUserId;
