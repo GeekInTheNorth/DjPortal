@@ -12,5 +12,7 @@ public interface IRequestRepository
 
     Task UpdateStatus(Guid requestId, RequestStatus status);
 
+    Task<int> GetCountByUserAndEvent(Guid eventId, Guid userId);
+
     Task DeleteAndCreateRequestIndex();
 }

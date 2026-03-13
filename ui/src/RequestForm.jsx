@@ -10,6 +10,7 @@ function RequestForm() {
     const [showSuggestions, setShowSuggestions] = useState(true);
     const [trackSuggestions, setTrackSuggestions] = useState([]);
     const [showForm, setShowForm] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
     const { selectedEvent, getMusicRequests } = useContext(AppContext);
 
     const handleRequestorNameChange = (event) => {
@@ -47,11 +48,16 @@ function RequestForm() {
         };
 
         try {
+            setErrorMessage('');
             await axios.post(import.meta.env.VITE_APP_REQUESTS_SUBMIT, requestData);
             await getMusicRequests(selectedEvent);
             setShowForm(false);
         } catch (error) {
-            console.error('Error submitting request', error);
+            if (error.response && error.response.status === 409) {
+                setErrorMessage(error.response.data?.message || 'You have reached the maximum number of requests for this event.');
+            } else {
+                console.error('Error submitting request', error);
+            }
         }
     };
 
@@ -111,6 +117,7 @@ function RequestForm() {
                 <Card.Header className='bg-primary text-light fw-bold'>Request a Track</Card.Header>
                 <Card.Body>
                     <Form>
+                        { errorMessage && <div className='alert alert-warning' role='alert'>{errorMessage}</div> }
                         <FormGroup className='mb-3' controlId='formRequestor'>
                             <Form.Label className='fw-bold d-block'>Your Name</Form.Label>
                             <div className='form-text'>Your name will only be visible to you and the DJ.</div>
