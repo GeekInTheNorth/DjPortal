@@ -1,0 +1,229 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DJ Mark - Ceroc Dance Events & Music Requests",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://dj.stott.pro"
+    }
+  ],
+  "paths": {
+    "/api/events/list/": {
+      "get": {
+        "operationId": "listEvents",
+        "summary": "List upcoming DJ events",
+        "responses": {
+          "200": {
+            "description": "A list of DJ events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Event"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tracks/search/": {
+      "get": {
+        "operationId": "searchTracks",
+        "summary": "Search for tracks by artist or song name",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching tracks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Track"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/musicrequest/list/": {
+      "get": {
+        "operationId": "listMusicRequests",
+        "summary": "List music requests made for a specific DJ event",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "query",
+            "required": true,
+            "description": "The GUID of the event from the event listings API",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of music requests for the event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MusicRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "times": {
+            "type": "string"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "locationAddress": {
+            "type": "string"
+          },
+          "eventPageUrl": {
+            "type": "string"
+          },
+          "facebookEventUrl": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "isCancelled": {
+            "type": "boolean"
+          },
+          "isRequestable": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Track": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "artist": {
+            "type": "string"
+          },
+          "album": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bpm": {
+            "type": "number"
+          },
+          "key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      },
+      "MusicRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "trackName": {
+            "type": "string"
+          },
+          "spotifyUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Pending",
+              "Queued",
+              "Played",
+              "AlreadyServed"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
