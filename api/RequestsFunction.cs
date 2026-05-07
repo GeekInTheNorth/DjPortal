@@ -49,6 +49,17 @@ public class MusicRequestFunction(
         }
 
         var existingUserCookie = GetUserCookieOrDefault(req, out var userId);
+
+        var user = GetAuthenticatedUser(req);
+        if (user is not { IsAuthenticated: true })
+        {
+            var requestCount = await requestRepository.GetCountByUserAndEvent(eventId, userId);
+            if (requestCount >= AppConstants.MaxAnonymousRequestsPerEvent)
+            {
+                return await CreateResponseAsync(req, System.Net.HttpStatusCode.Conflict, new { message = AppConstants.MaxRequestsExceededMessage }, !existingUserCookie, userId);
+            }
+        }
+
         var newRequest = new MusicRequest
         {
             Id = Guid.NewGuid(),

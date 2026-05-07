@@ -26,6 +26,31 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         }
     }
 
+    public async Task<int> GetCountByUserAndEvent(Guid eventId, Guid userId)
+    {
+        if (!TryCreateSearchClient(AppConstants.RequestsIndexName, out var searchClient))
+        {
+            return 0;
+        }
+
+        try
+        {
+            var options = new SearchOptions
+            {
+                Size = 0,
+                IncludeTotalCount = true,
+                Filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}' and {nameof(MusicRequest.UserId)} eq '{userId}'"
+            };
+
+            var response = await searchClient.SearchAsync<MusicRequest>(options);
+            return (int)(response.Value.TotalCount ?? 0);
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
     public async Task Delete(Guid requestId)
     {
         if (!TryCreateSearchClient(AppConstants.RequestsIndexName, out var searchClient))

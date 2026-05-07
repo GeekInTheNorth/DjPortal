@@ -51,9 +51,9 @@ public sealed class EventDetails : IEventDetailsData
     [JsonConverter(typeof(NullableBooleanJsonConverter))]
     public bool GenerateSchemaData { get; set; }
 
-    public string EventPageUrl => $"/events/{Date:yyyy-MM-dd}";
+    public string EventPageUrl => $"https://dj.stott.pro/events/{Date:yyyy-MM-dd}";
 
-    public string CalendarInviteUrl => $"/api/events/getinvite/{Id}/dance-event.ics";
+    public string CalendarInviteUrl => $"https://dj.stott.pro/api/events/getinvite/{Id}/dance-event.ics";
 
     public string? FacebookEventUrl => Uri.IsWellFormedUriString(FacebookEventId, UriKind.Absolute) ? FacebookEventId : null;
 
