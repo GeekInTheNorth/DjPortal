@@ -1,4 +1,6 @@
-﻿using Azure.Search.Documents;
+﻿using System.Globalization;
+
+using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 
@@ -10,19 +12,26 @@ namespace DjPortalApi.Features.Tracks;
 
 public sealed class TrackRepository(IConfiguration configuration) : BaseRepository(configuration), ITrackRepository
 {
-    public IList<Track> List(string? searchTerm)
+    public IList<Track> List(string? searchTerm, decimal lowBpm, decimal highBpm)
     {
-        return ListAsync(searchTerm).Result;
+        return ListAsync(searchTerm, lowBpm, highBpm).Result;
     }
 
-    public async Task<IList<Track>> ListAsync(string? searchTerm)
+    public async Task<IList<Track>> ListAsync(string? searchTerm, decimal lowBpm, decimal highBpm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm) || !TryCreateSearchClient(AppConstants.TrackIndexName, out var searchClient) || searchClient == null)
         {
             return [];
         }
 
-        var response = await searchClient.SearchAsync<Track>(searchTerm.Trim(), new SearchOptions { Size = 10 });
+        var filter = string.Format(
+            CultureInfo.InvariantCulture,
+            "{0} ge {1} and {0} le {2}",
+            nameof(Track.BPM),
+            lowBpm,
+            highBpm);
+
+        var response = await searchClient.SearchAsync<Track>(searchTerm.Trim(), new SearchOptions { Size = 10, Filter = filter });
 
         return  response.Value.GetResults().Select(x => x.Document).ToList();
     }

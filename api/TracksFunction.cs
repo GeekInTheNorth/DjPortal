@@ -24,10 +24,12 @@ public class TracksFunction(ITrackRepository trackRepository, TelemetryClient te
     public async Task<HttpResponseData> TrackSearch([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "tracks/search")] HttpRequestData req)
     {
         var query = req.Query["query"];
+        var lowBpm = ParseBpm(req.Query["lowBpm"], 100m);
+        var highBpm = ParseBpm(req.Query["highBpm"], 145m);
 
         LogTrackSearch(query);
 
-        var tracks = await trackRepository.ListAsync(query);
+        var tracks = await trackRepository.ListAsync(query, lowBpm, highBpm);
 
         return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, tracks);
     }
@@ -82,5 +84,12 @@ public class TracksFunction(ITrackRepository trackRepository, TelemetryClient te
         }
 
         telemetryClient.TrackEvent("TrackSearch", new Dictionary<string, string> { { "Query", query } });
+    }
+
+    private static decimal ParseBpm(string? value, decimal defaultValue)
+    {
+        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : defaultValue;
     }
 }
