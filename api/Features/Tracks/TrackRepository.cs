@@ -69,7 +69,7 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
 
         var albumField = new SimpleField(nameof(Track.Album), SearchFieldDataType.String);
         var bpmField = new SimpleField(nameof(Track.BPM), SearchFieldDataType.Int32) { IsFilterable = true };
-        var timeField = new SimpleField(nameof(Track.Key), SearchFieldDataType.String);
+        var timeField = new SimpleField(nameof(Track.Time), SearchFieldDataType.String);
         var keyField = new SimpleField(nameof(Track.Key), SearchFieldDataType.String);
 
         for (int i = 0; i < items.Count; i++)
