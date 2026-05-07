@@ -48,7 +48,12 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
         var synonymMap = new SynonymMap(AppConstants.SynonymMapName, synonymList);
         await searchIndexClient.CreateOrUpdateSynonymMapAsync(synonymMap);
 
-        var idField = new SimpleField(nameof(Track.Id), SearchFieldDataType.String) { IsKey = true, IsFilterable = true, IsSortable = true };
+        var idField = new SimpleField(nameof(Track.Id), SearchFieldDataType.String)
+        { 
+            IsKey = true, 
+            IsFilterable = true, 
+            IsSortable = true
+        };
 
         var titleField = new SearchableField(nameof(Track.Title));
         titleField.SynonymMapNames.Add(AppConstants.SynonymMapName);
@@ -62,6 +67,11 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
         artistField.IsSortable = true;
         artistField.AnalyzerName = LexicalAnalyzerName.StandardAsciiFoldingLucene;
 
+        var albumField = new SimpleField(nameof(Track.Album), SearchFieldDataType.String);
+        var bpmField = new SimpleField(nameof(Track.BPM), SearchFieldDataType.Int32) { IsFilterable = true };
+        var timeField = new SimpleField(nameof(Track.Key), SearchFieldDataType.String);
+        var keyField = new SimpleField(nameof(Track.Key), SearchFieldDataType.String);
+
         for (int i = 0; i < items.Count; i++)
         {
             items[i].Id = i.ToString("F0");
@@ -69,12 +79,12 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
 
         await searchIndexClient.CreateIndexAsync(new SearchIndex(AppConstants.TrackIndexName)
         {
-            Fields = { idField, titleField, artistField }
+            Fields = { idField, titleField, artistField, albumField, timeField, bpmField, keyField }
         });
 
         if (TryCreateSearchClient(AppConstants.TrackIndexName, out var searchClient))
         {
-            var batch = IndexDocumentsBatch.Upload(items.Select(x => new { x.Id, x.Title, x.Artist }));
+            var batch = IndexDocumentsBatch.Upload(items.Select(x => new { x.Id, x.Title, x.Artist, x.Album, x.Time, x.BPM, x.Key }));
             await searchClient.IndexDocumentsAsync(batch);
         }
     }
