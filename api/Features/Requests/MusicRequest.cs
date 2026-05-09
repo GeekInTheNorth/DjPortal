@@ -27,8 +27,8 @@ public sealed class MusicRequest
     [JsonIgnore]
     public int StatusOrder => _status switch
     {
-        "Approved" => 0,
-        "Queued" => 1,
+        "Queued" => 0,
+        "Approved" => 1,
         "Pending" => 2,
         "Played" => 3,
         "AlreadyServed" => 4,

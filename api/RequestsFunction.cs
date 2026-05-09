@@ -27,13 +27,11 @@ public class MusicRequestFunction(
         var comparer = new MusicRequestComparer();
         var uniqueRequests = requests.Distinct(comparer).OrderBy(x => x.StatusOrder).ThenBy(x => x.UserName).ThenBy(x => x.TrackName).ToList();
 
+        // Filter and obfuscate for non-authenticated users
         var user = GetAuthenticatedUser(req);
         if (user is not { IsAuthenticated: true })
         {
-            foreach (var musicRequest in uniqueRequests)
-            {
-                musicRequest.UserName = userId.Equals(musicRequest.UserId) ? "You" : musicRequest.UserName.Obfuscate();
-            }
+            uniqueRequests = FilterForVisitor(uniqueRequests, userId).ToList();
         }
 
         return await CreateResponseAsync(req, System.Net.HttpStatusCode.OK, uniqueRequests, !existingUserCookie, userId);
@@ -50,6 +48,8 @@ public class MusicRequestFunction(
 
         var existingUserCookie = GetUserCookieOrDefault(req, out var userId);
 
+        // Customers can only request a limited number of tracks.
+        // Customers are never authenticated.
         var user = GetAuthenticatedUser(req);
         if (user is not { IsAuthenticated: true })
         {
@@ -68,6 +68,12 @@ public class MusicRequestFunction(
             UserName = model.RequestedBy,
             TrackName = model.MusicRequest
         };
+
+        // The DJ gets an auto approval on new requests
+        if (user is { IsAuthenticated: true})
+        {
+            newRequest.Status = RequestStatus.Approved.ToString();
+        }
 
         newRequest = await ProcessSpotifyUrl(newRequest);
         await requestRepository.Add(newRequest);
@@ -174,5 +180,23 @@ public class MusicRequestFunction(
         }
 
         return request;
+    }
+
+    private static IEnumerable<MusicRequest> FilterForVisitor(IList<MusicRequest> requests, Guid userId)
+    {
+        // Non-authenticated users should only see requests they made and approved obfuscated requests by other users.
+        foreach(var request in requests)
+        {
+            if (userId.Equals(request.UserId))
+            {
+                request.UserName = "You";
+                yield return request;
+            }
+            else if (!string.Equals(RequestStatus.Pending.ToString(), request.Status))
+            {
+                request.UserName = request.UserName.Obfuscate();
+                yield return request;
+            }
+        }
     }
 }

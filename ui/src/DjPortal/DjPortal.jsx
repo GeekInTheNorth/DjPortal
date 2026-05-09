@@ -32,7 +32,8 @@ function DjPortal() {
                 <td>{requestData.userName}</td>
                 <td>{requestData.status}</td>
                 <td>
-                    {requestData.status === 'Pending' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Queued')}>Queued</button>}
+                    {requestData.status === 'Pending' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Approved')}>Approve</button>}
+                    {requestData.status === 'Approved' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Queued')}>Queue</button>}
                     {requestData.status === 'Queued' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Played')}>Played</button>}
                     {requestData.status !== 'Pending' && <button className='btn btn-danger mx-3' onClick={() => handleRequestStateChange(requestData.id, 'Pending')}>Reset</button>}
                     {allowDelete && <button className='btn btn-danger mx-3' onClick={() => handleDeleteRequest(requestData.id)}>Delete</button>}
