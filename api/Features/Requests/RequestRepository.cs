@@ -105,11 +105,13 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         {
             var userId = musicResquest.UserId;
             var eventId = musicResquest.EventId;
-            var filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}' and {nameof(MusicRequest.UserId)} eq '{userId}' and {nameof(MusicRequest.Status)} eq '{RequestStatus.Pending}'";
+            var filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}' and {nameof(MusicRequest.UserId)} eq '{userId}'";
             var response = await searchClient.SearchAsync<MusicRequest>(new SearchOptions { Size = 100, Filter = filter });
             var otherPendingRequests = response.Value.GetResults()
                 .Select(x => x.Document)
                 .Where(x => x.Id != requestId)
+                .Where(x => string.Equals(RequestStatus.Pending.ToString(), x.Status, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(RequestStatus.Approved.ToString(), x.Status, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             if (otherPendingRequests.Count > 0)

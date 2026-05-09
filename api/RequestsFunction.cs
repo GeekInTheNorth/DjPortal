@@ -69,10 +69,11 @@ public class MusicRequestFunction(
             TrackName = model.MusicRequest
         };
 
-        // The DJ gets an auto approval on new requests
+        // The DJ gets an auto approval on new requests and a random user id to make each request a uniquely owned request
         if (user is { IsAuthenticated: true})
         {
             newRequest.Status = RequestStatus.Approved.ToString();
+            newRequest.UserId = Guid.NewGuid();
         }
 
         newRequest = await ProcessSpotifyUrl(newRequest);
