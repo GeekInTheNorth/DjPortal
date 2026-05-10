@@ -2,7 +2,6 @@ import { useContext } from 'react'
 import { AppContext } from './AppContext.jsx';
 import EventSummary from './EventSummary.jsx'
 import EventSkeletonLoader from './EventSkeletonLoader.jsx'
-import Faq from './Faq.jsx'
 
 function EventList() {
 
@@ -26,7 +25,6 @@ function EventList() {
   return (
     <>
       {renderEventCollection()}
-      <Faq durationHours={4} />
     </>
   );
 }
