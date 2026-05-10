@@ -43,6 +43,26 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "lowBpm",
+            "in": "query",
+            "required": false,
+            "description": "Minimum BPM for track results",
+            "schema": {
+              "type": "integer",
+              "example": 100
+            }
+          },
+          {
+            "name": "highBpm",
+            "in": "query",
+            "required": false,
+            "description": "Maximum BPM for track results",
+            "schema": {
+              "type": "integer",
+              "example": 135
+            }
           }
         ],
         "responses": {
