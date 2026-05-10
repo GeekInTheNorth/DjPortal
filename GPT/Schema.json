@@ -114,6 +114,45 @@
           }
         }
       }
+    },
+    "/api/musicrequest/create": {
+      "post": {
+        "operationId": "createMusicRequest",
+        "summary": "Submit a music request for a specific DJ event",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMusicRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request created successfully"
+          },
+          "400": {
+            "description": "Validation error — missing or invalid eventId, musicRequest, or requestedBy"
+          },
+          "409": {
+            "description": "The user has exceeded the maximum number of anonymous requests for this event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -241,6 +280,29 @@
               "Played",
               "AlreadyServed"
             ]
+          }
+        }
+      },
+      "CreateMusicRequest": {
+        "type": "object",
+        "required": [
+          "eventId",
+          "musicRequest",
+          "requestedBy"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The GUID of the event from listEvents"
+          },
+          "musicRequest": {
+            "type": "string",
+            "description": "The track to request — either a 'Title - Artist' style name, or a Spotify track URL"
+          },
+          "requestedBy": {
+            "type": "string",
+            "description": "The display name of the person making the request, shown to the DJ"
           }
         }
       }
