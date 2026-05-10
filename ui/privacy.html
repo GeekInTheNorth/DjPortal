@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Privacy Policy - DJ Mark</title>
+    <meta name="description" content="How DJ Mark's music request site handles your data, cookies, and event request information." />
+    <meta property="og:url" content="https://dj.stott.pro/privacy" />
+    <meta property="og:title" content="Privacy Policy - DJ Mark" />
+    <meta property="og:description" content="How DJ Mark's music request site handles your data, cookies, and event request information." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:creator" content="@GeekInTheNorth" />
+    <meta name="twitter:site" content="@GeekInTheNorth" />
+    <meta name="twitter:title" content="Privacy Policy - DJ Mark" />
+    <meta name="twitter:description" content="How DJ Mark's music request site handles your data, cookies, and event request information." />
+    <link rel="canonical" href="https://dj.stott.pro/privacy" />
+    <meta name='viewport' content='maximum-scale=5.0, initial-scale=1.0, width=device-width'>
+    <meta name="theme-color" content="#212529">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DJ Mark">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+<header>
+    <nav class="navbar fixed-top navbar-dark bg-dark" id="mainNav">
+        <div class="container-fluid justify-content-start">
+            <a class="navbar-brand fw-bold" href="/">DJ Mark</a>
+        </div>
+    </nav>
+</header>
+<main class="mt-5">
+
+<div class="container pt-3">
+    <h1>Privacy Policy</h1>
+    <p class="text-muted">Last updated: 10 May 2026</p>
+
+    <p>This site (<a href="https://dj.stott.pro">https://dj.stott.pro</a>) is run
+    by DJ Mark Stott to take music requests at Ceroc / Modern Jive events. We
+    aim to collect only the information needed to deliver the service, and to
+    delete it as soon as it is no longer useful.</p>
+
+    <h2 class="h4 mt-4">What we collect when you submit a request</h2>
+    <ul>
+        <li>The <strong>display name</strong> you enter on the request form.</li>
+        <li>The <strong>track</strong> you ask for &mdash; either a song name or a Spotify track URL.</li>
+        <li>The <strong>event</strong> you are requesting it for.</li>
+        <li>An <strong>anonymous browser identifier</strong> (see Cookies below) that links your requests together for the same event.</li>
+    </ul>
+    <p>We do not ask for or store your email address, phone number, postal address, or any social profile.</p>
+
+    <h2 class="h4 mt-4">Cookies</h2>
+    <p>We use a single essential cookie called <code>cydjr.requestor</code>. It contains
+    a randomly-generated identifier (a GUID) that is unique to your browser and device.
+    It is used only to:</p>
+    <ul>
+        <li>Show you the requests you have made for an event under your own identity (shown to you as &quot;You&quot;).</li>
+        <li>Associate any further requests you make with the same person.</li>
+    </ul>
+    <p>The cookie expires after 365 days. It is not used for advertising, profiling, or
+    analytics. You can clear it at any time from your browser's settings; doing so
+    means subsequent requests will be recorded under a fresh identifier.</p>
+
+    <h2 class="h4 mt-4">Who can see your name</h2>
+    <ul>
+        <li><strong>The DJ</strong> can see the display name you enter, alongside your request.</li>
+        <li><strong>Other dancers</strong> browsing the request list will see your request, but your name will be obfuscated. Your full name is never shown to other users.</li>
+    </ul>
+
+    <h2 class="h4 mt-4">How long we keep your data</h2>
+    <p>All data held on https://dj.stott.pro for an event &mdash; including the event
+    information itself and every music request made for it &mdash; is permanently
+    deleted within <strong>48 hours after the event has ended</strong>. This deletion
+    is a manually triggered process and is <strong>non-recoverable</strong>.</p>
+
+    <h2 class="h4 mt-4">Third parties</h2>
+    <ul>
+        <li>If you submit a Spotify track URL, the site calls the Spotify Web API to look up the track's title and artist. Only the Spotify track identifier is sent to Spotify &mdash; your name and your cookie identifier are not.</li>
+        <li>The site uses Microsoft Application Insights for diagnostics. Telemetry collected this way is not linked to your <code>cydjr.requestor</code> identifier.</li>
+    </ul>
+</div>
+
+</main>
+<script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

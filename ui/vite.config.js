@@ -195,6 +195,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         djportal: resolve(__dirname, 'djportal.html'),
         admin: resolve(__dirname, 'admin.html'),
+        privacy: resolve(__dirname, 'privacy.html'),
       },
       output: {
         assetFileNames: 'static/[name]-[hash][extname]',
