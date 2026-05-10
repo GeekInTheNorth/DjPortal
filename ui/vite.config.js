@@ -98,7 +98,7 @@ function eventPagesDevPlugin() {
 
             // Inject event list into the placeholder
             let modifiedHtml = indexHtml.replace(
-              /<div class="container pt-3" id="event-list">\s*<!-- Static event list and FAQ will be injected here by generate-event-pages\.js during build -->\s*<\/div>/,
+              /<div class="container pt-3" id="event-list">\s*<!-- Static event list will be injected here by generate-event-pages\.js during build -->\s*<\/div>/,
               `<div class="container pt-3" id="event-list">\n${eventListHtml}\n</div>`
             );
 
@@ -196,6 +196,7 @@ export default defineConfig({
         djportal: resolve(__dirname, 'djportal.html'),
         admin: resolve(__dirname, 'admin.html'),
         privacy: resolve(__dirname, 'privacy.html'),
+        faq: resolve(__dirname, 'faq.html'),
       },
       output: {
         assetFileNames: 'static/[name]-[hash][extname]',
