@@ -185,17 +185,54 @@ public class MusicRequestFunction(
 
     private static IEnumerable<MusicRequest> FilterForVisitor(IList<MusicRequest> requests, Guid userId)
     {
+        var dancingNames = new List<string>
+        {
+            "Ballroom Ghost",
+            "Dancefloor Poet",
+            "Dancing Queen",
+            "Disco Voyager",
+            "Groove Bandit",
+            "Harmony Rebel",
+            "Moonlight Mover",
+            "Midnight Rider",
+            "Rhythm Renegade",
+            "Son of a Preacher Man",
+            "Spin Me Slowly",
+            "Sweet Caroline",
+            "Sweet Child of Mine",
+            "The One & Only",
+            "Tiny Dancer"
+        };
+        
+        dancingNames.Shuffle();
+        var userIds = requests.Select(x => x.UserId).Distinct();
+        var names = new Dictionary<Guid, string>();
+        var item = 0;
+
+        foreach(var userGuid in userIds)
+        {
+            if (Guid.Equals(userId, userGuid))
+            {
+                names.Add(userGuid, "You");
+            }
+            else
+            {
+                names.Add(userGuid, dancingNames[item]);
+                item++;
+            }
+
+            if (item >= dancingNames.Count)
+            {
+                item = 0;
+            }
+        }
+
         // Non-authenticated users should only see requests they made and approved obfuscated requests by other users.
         foreach(var request in requests)
         {
-            if (userId.Equals(request.UserId))
+            if (!string.Equals(RequestStatus.Pending.ToString(), request.Status))
             {
-                request.UserName = "You";
-                yield return request;
-            }
-            else if (!string.Equals(RequestStatus.Pending.ToString(), request.Status))
-            {
-                request.UserName = request.UserName.Obfuscate();
+                request.UserName = names.TryGetValue(request.UserId, out var dancerName) ? dancerName : request.UserName.Obfuscate();
                 yield return request;
             }
         }
