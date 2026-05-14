@@ -214,7 +214,7 @@ ${buildSchemaJsonLd(event)}
 </div>
 
 </main>
-<footer class="py-3 my-4 text-light">
+<footer class="mt-4 text-light">
     <ul class="nav justify-content-center border-bottom pb-3 mb-3">
         <li class="nav-item"><a href="/faq" class="nav-link px-2 text-light">FAQ</a></li>
         <li class="nav-item"><a href="/privacy" class="nav-link px-2 text-light">Privacy</a></li>
