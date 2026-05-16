@@ -211,7 +211,7 @@ public class MusicRequestFunction(
 
         foreach(var userGuid in userIds)
         {
-            if (Guid.Equals(userId, userGuid))
+            if (Equals(userId, userGuid))
             {
                 names.Add(userGuid, "You");
             }
@@ -227,14 +227,18 @@ public class MusicRequestFunction(
             }
         }
 
-        // Non-authenticated users should only see requests they made and approved obfuscated requests by other users.
+        // Non-authenticated users should only see obfuscated names
+        // Unapproved requests should be anonymised except to the requester
         foreach(var request in requests)
         {
-            if (!string.Equals(RequestStatus.Pending.ToString(), request.Status))
+            request.UserName = names.TryGetValue(request.UserId, out var dancerName) ? dancerName : request.UserName.Obfuscate();
+
+            if (string.Equals(RequestStatus.Pending.ToString(), request.Status) && !Equals(userId, request.UserId))
             {
-                request.UserName = names.TryGetValue(request.UserId, out var dancerName) ? dancerName : request.UserName.Obfuscate();
-                yield return request;
+                request.TrackName = "Pending Approval";
             }
+
+            yield return request;
         }
     }
 }
