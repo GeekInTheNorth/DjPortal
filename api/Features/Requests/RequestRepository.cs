@@ -86,7 +86,22 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
             return;
         }
 
-        await searchClient.UploadDocumentsAsync([request]);
+        await searchClient.UploadDocumentsAsync(
+            [
+                new 
+                {
+                    Id = Guid.NewGuid(),
+                    request.EventId,
+                    request.UserId,
+                    request.UserName,
+                    request.TrackName,
+                    request.SpotifyUrl,
+                    request.BPM,
+                    request.Time,
+                    request.IsFinalized,
+                    request.Status
+                }
+            ]);
     }
 
     public async Task UpdateStatus(Guid requestId, RequestStatus status)
