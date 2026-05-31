@@ -18,10 +18,29 @@ public sealed class MusicRequest
 
     public string? SpotifyUrl { get; set; }
 
+    public decimal BPM { get; set; }
+
+    public string? Time { get; set; }
+
+    public bool IsFinalized { get; set; }
+
     public string? Status
     {
         get => string.IsNullOrWhiteSpace(_status) ? RequestStatus.Pending.ToString() : _status;
         set => _status = value;
+    }
+
+    public string Timing
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Time) || BPM < 1)
+            {
+                return string.Empty;
+            }
+
+            return $"{Time} ({BPM:F0})";
+        }
     }
 
     [JsonIgnore]

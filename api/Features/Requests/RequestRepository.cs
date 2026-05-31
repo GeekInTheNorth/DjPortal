@@ -16,7 +16,12 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
 
         try
         {
-            var response = await searchClient.SearchAsync<MusicRequest>(new SearchOptions { Size = 100, Filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}'" });
+            var options = new SearchOptions
+            { 
+                Size = 100, 
+                Filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}' and {nameof(MusicRequest.IsFinalized)} eq true" 
+            };
+            var response = await searchClient.SearchAsync<MusicRequest>(options);
 
             return response.Value.GetResults().Select(x => x.Document).ToList();
         }
@@ -39,7 +44,7 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
             {
                 Size = 0,
                 IncludeTotalCount = true,
-                Filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}' and {nameof(MusicRequest.UserId)} eq '{userId}'"
+                Filter = $"{nameof(MusicRequest.EventId)} eq '{eventId}' and {nameof(MusicRequest.UserId)} eq '{userId}' and {nameof(MusicRequest.IsFinalized)} eq true"
             };
 
             var response = await searchClient.SearchAsync<MusicRequest>(options);
@@ -141,10 +146,25 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         var trackNameField = new SearchableField(nameof(MusicRequest.TrackName));
         var statusField = new SimpleField(nameof(MusicRequest.Status), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
         var spotifyUrlField = new SimpleField(nameof(MusicRequest.SpotifyUrl), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
+        var bpmField = new SimpleField(nameof(MusicRequest.BPM), SearchFieldDataType.Double);
+        var timeField = new SimpleField(nameof(MusicRequest.Time), SearchFieldDataType.String);
+        var IsFinalizedField = new SimpleField(nameof(MusicRequest.IsFinalized), SearchFieldDataType.Boolean) { IsFilterable = true };
 
         await searchIndexClient.CreateIndexAsync(new SearchIndex(AppConstants.RequestsIndexName)
         {
-            Fields = { idField, eventIdField, userIdField, userNameField, trackNameField, statusField, spotifyUrlField }
+            Fields = 
+            { 
+                idField, 
+                eventIdField, 
+                userIdField, 
+                userNameField, 
+                trackNameField, 
+                statusField, 
+                spotifyUrlField, 
+                bpmField, 
+                timeField,
+                IsFinalizedField
+            }
         });
     }
 }

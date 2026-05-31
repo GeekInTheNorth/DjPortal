@@ -1,5 +1,4 @@
 using DjPortalApi.Features;
-using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Extensions;
 using DjPortalApi.Features.Requests;
 using DjPortalApi.Features.Spotify;
@@ -9,8 +8,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 namespace DjPortalApi;
 
 public class MusicRequestFunction(
-    IRequestRepository requestRepository, 
-    IEventRepository eventRepository,
+    IRequestRepository requestRepository,
     ISpotifyService spotifyService) : BaseFunction
 {
     [Function("GetMusicRequests")]
@@ -66,7 +64,10 @@ public class MusicRequestFunction(
             EventId = eventId,
             UserId = userId,
             UserName = model.RequestedBy,
-            TrackName = model.MusicRequest
+            TrackName = model.MusicRequest,
+            BPM = model.SafeBpm,
+            Time = model.Time,
+            IsFinalized = true
         };
 
         // The DJ gets an auto approval on new requests and a random user id to make each request a uniquely owned request
@@ -78,37 +79,6 @@ public class MusicRequestFunction(
 
         newRequest = await ProcessSpotifyUrl(newRequest);
         await requestRepository.Add(newRequest);
-
-        return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK, !existingUserCookie, userId);
-    }
-
-    [Function("ShareRequest")]
-    public async Task<HttpResponseData> ShareRequest([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "musicrequest/share")] HttpRequestData req)
-    {
-        var model = await GetModelAsync<ShareModel>(req);
-        if (string.IsNullOrWhiteSpace(model?.Url))
-        {
-            return CreateEmptyResponse(req, System.Net.HttpStatusCode.BadRequest);
-        }
-
-        var existingUserCookie = GetUserCookieOrDefault(req, out var userId);
-        var events = await eventRepository.List();
-        
-        var currentEvent = events.FirstOrDefault(x => x.IsRequestable);
-        if (currentEvent != null)
-        {
-            var newRequest = new MusicRequest
-            {
-                Id = Guid.NewGuid(),
-                EventId = currentEvent.Id,
-                UserId = userId,
-                UserName = "Shared Link",
-                TrackName = model.Url
-            };
-
-            newRequest = await ProcessSpotifyUrl(newRequest);
-            await requestRepository.Add(newRequest);
-        }
 
         return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK, !existingUserCookie, userId);
     }

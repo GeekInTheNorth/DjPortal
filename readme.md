@@ -120,7 +120,6 @@ All routes are exposed under `/api/*` via the Static Web Apps proxy.
 | `/api/events/deletecache` | DELETE | Authenticated | Purge in-memory event cache |
 | `/api/musicrequest/list` | GET | Anonymous | List requests for an event (names obfuscated for non-DJ users) |
 | `/api/musicrequest/create` | POST | Anonymous | Submit a request (rate-limited by cookie) |
-| `/api/musicrequest/share` | POST | Anonymous | PWA share-target ingestion |
 | `/api/musicrequest/updatestatus` | POST | Authenticated | DJ updates request status |
 | `/api/musicrequest/delete` | DELETE | Authenticated | Delete a request |
 | `/api/musicrequest/deleteall` | DELETE | Authenticated | Drop & recreate requests index |

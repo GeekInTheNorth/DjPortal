@@ -7,6 +7,8 @@ function RequestForm() {
 
     const [requestorName, setRequestorName] = useState('');
     const [trackName, setTrackName] = useState('');
+    const [trackBpm, setTrackBpm] = useState(0);
+    const [trackTime, setTrackTime] = useState(null);
     const [showSuggestions, setShowSuggestions] = useState(true);
     const [trackSuggestions, setTrackSuggestions] = useState([]);
     const [showForm, setShowForm] = useState(true);
@@ -27,10 +29,21 @@ function RequestForm() {
         setShowSuggestions(true);
     };
 
+    const handleTrackNameKeyUp = (event) => {
+        if (!/^[a-z0-9]$/i.test(event.key)) {
+            return;
+        }
+
+        setTrackBpm(0);
+        setTrackTime(null);
+    };
+
     const handleSuggestionClick = (event) => {
         const buttonText = event.target.innerText;
         setTrackName(buttonText);
         setShowSuggestions(false);
+        setTrackTime(event.target.dataset.time ?? null);
+        setTrackBpm(event.target.dataset.bpm ?? 0);
     };
 
     const handleSetShowForm = () => {
@@ -44,7 +57,9 @@ function RequestForm() {
         const requestData = {
             eventId: selectedEvent.id,
             musicRequest: trackName,
-            requestedBy: requestorName
+            requestedBy: requestorName,
+            bpm: trackBpm ?? 0,
+            time: trackTime ?? ''
         };
 
         try {
@@ -96,7 +111,7 @@ function RequestForm() {
     const renderTrackSuggestions = () => {
         return trackSuggestions && trackSuggestions.map((track, index) => {
           return (
-            <li key={index} className='list-group-item'><Button variant='link' onClick={handleSuggestionClick}>{track.title}, {track.artist}</Button></li>
+            <li key={index} className='list-group-item'><Button variant='link' onClick={handleSuggestionClick} data-time={track.time} data-bpm={track.bpm}>{track.title}, {track.artist}</Button></li>
           )}
         )};
 
@@ -126,7 +141,7 @@ function RequestForm() {
                         <FormGroup className='mb-3' controlId='formMusicRequest'>
                             <Form.Label className='fw-bold d-block'>Your Request</Form.Label>
                             <div className='form-text'>Type the song name and artist here, enter a <strong>spotify</strong> link or select one of the suggestions below as you type.</div>
-                            <Form.Control type='text' placeholder='Enter a track name and artist here' value={trackName} onChange={handleTrackNameChange} onKeyDown={handleTrackNameKeyPress} required={true} />
+                            <Form.Control type='text' placeholder='Enter a track name and artist here' value={trackName} onChange={handleTrackNameChange} onKeyDown={handleTrackNameKeyPress} onKeyUp={handleTrackNameKeyUp} required={true} />
                             { showSuggestions ? <ul className='list-group my-3'>{renderTrackSuggestions()}</ul> : null }
                         </FormGroup>
                         <Form.Group className='my-3'>

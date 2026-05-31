@@ -30,6 +30,7 @@ function DjPortal() {
                     {isSpotifyUrl ? (<a href={requestData.spotifyUrl} className='spotify-link' target="_blank" rel="noopener noreferrer">Open in Spotify</a>) : ''}
                 </td>
                 <td>{requestData.userName}</td>
+                <td>{requestData.timing}</td>
                 <td>{requestData.status}</td>
                 <td>
                     {requestData.status === 'Pending' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Approved')}>Approve</button>}
@@ -118,6 +119,7 @@ function DjPortal() {
                         <tr>
                             <th>Request</th>
                             <th>Requested By</th>
+                            <th>Timing</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -150,7 +152,8 @@ DjPortal.propTypes = {
         id: PropTypes.string,
         userName: PropTypes.string,
         trackName: PropTypes.string,
-        status: PropTypes.string
+        status: PropTypes.string,
+        timing: PropTypes.string
     })
 };
 
