@@ -119,7 +119,20 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         }
 
         musicResquest.Status = status.ToString();
-        await searchClient.UploadDocumentsAsync([musicResquest]);
+        await searchClient.UploadDocumentsAsync([
+            new {
+                musicResquest.Id,
+                musicResquest.EventId,
+                musicResquest.UserId,
+                musicResquest.UserName,
+                musicResquest.TrackName,
+                musicResquest.SpotifyUrl,
+                musicResquest.BPM,
+                musicResquest.Time,
+                musicResquest.IsFinalized,
+                musicResquest.Status
+            }
+        ]);
 
         if (status == RequestStatus.Played)
         {
@@ -140,7 +153,20 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
                 {
                     req.Status = RequestStatus.AlreadyServed.ToString();
                 }
-                await searchClient.UploadDocumentsAsync(otherPendingRequests);
+                await searchClient.UploadDocumentsAsync(
+                    otherPendingRequests.Select(x => new
+                    {
+                        x.Id,
+                        x.EventId,
+                        x.UserId,
+                        x.UserName,
+                        x.TrackName,
+                        x.SpotifyUrl,
+                        x.BPM,
+                        x.Time,
+                        x.IsFinalized,
+                        x.Status
+                    }));
             }
         }
     }
