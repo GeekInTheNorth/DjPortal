@@ -8,6 +8,7 @@ import DjPortal from './DjPortal/DjPortal.jsx';
 import AdminTools from './DjPortal/AdminTools.jsx';
 import AdminEventList from './DjPortal/AdminEventList.jsx';
 import EventPageApp from './EventPageApp.jsx';
+import Contact from './Contact.jsx';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -41,5 +42,14 @@ const eventPageElement = document.getElementById('eventpage');
 if (eventPageElement) {
     ReactDOM.createRoot(eventPageElement).render(
         <EventPageApp />
+    );
+}
+
+const contactElement = document.getElementById('contact');
+if (contactElement) {
+    ReactDOM.createRoot(contactElement).render(
+        <AppProvider>
+            <Contact />
+        </AppProvider>
     );
 }

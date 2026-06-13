@@ -1,3 +1,4 @@
+using DjPortalApi.Features.Contact;
 using DjPortalApi.Features.Deployment;
 using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Insights;
@@ -16,9 +17,11 @@ builder.ConfigureFunctionsWebApplication();
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights()
-    .AddHttpClient();
+    .AddHttpClient()
+    .AddMemoryCache();
 
 builder.Services
+    .AddScoped<IEmailService, EmailService>()
     .AddScoped<IDeploymentService, DeploymentService>()
     .AddScoped<IEventRepository, EventRepository>()
     .AddScoped<IEventService, EventService>()

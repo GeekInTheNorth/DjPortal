@@ -48,4 +48,17 @@ Content-Type: application/json
     "time":""
 }
 
+### Submit Contact Form
+POST {{rooturl}}/api/contact/submit
+Content-Type: application/json
+
+{
+    "name": "Test Visitor",
+    "email": "visitor@example.com",
+    "subject": "DJ hire enquiry",
+    "message": "Hi Mark, are you available for a birthday event?",
+    "company": "",
+    "elapsedMs": 8000
+}
+
 ###

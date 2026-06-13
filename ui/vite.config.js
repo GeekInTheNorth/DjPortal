@@ -197,6 +197,7 @@ export default defineConfig({
         admin: resolve(__dirname, 'admin.html'),
         privacy: resolve(__dirname, 'privacy.html'),
         faq: resolve(__dirname, 'faq.html'),
+        contact: resolve(__dirname, 'contact.html'),
       },
       output: {
         assetFileNames: 'static/[name]-[hash][extname]',

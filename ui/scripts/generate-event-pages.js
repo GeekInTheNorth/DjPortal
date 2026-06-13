@@ -217,6 +217,7 @@ ${buildSchemaJsonLd(event)}
 <footer class="mt-4 text-light">
     <ul class="nav justify-content-center border-bottom pb-3 mb-3">
         <li class="nav-item"><a href="/faq" class="nav-link px-2 text-light">FAQ</a></li>
+        <li class="nav-item"><a href="/contact" rel="nofollow" class="nav-link px-2 text-light">Contact</a></li>
         <li class="nav-item"><a href="/privacy" class="nav-link px-2 text-light">Privacy</a></li>
     </ul>
     <p class="text-center text-light">© 2026 Mark Stott</p>
