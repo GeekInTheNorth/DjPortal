@@ -67,6 +67,9 @@ function RequestForm() {
             await axios.post(import.meta.env.VITE_APP_REQUESTS_SUBMIT, requestData);
             await getMusicRequests(selectedEvent);
             setShowForm(false);
+            setTrackName('');
+            setTrackBpm(0);
+            setTrackTime('');
         } catch (error) {
             if (error.response && error.response.status === 409) {
                 setErrorMessage(error.response.data?.message || 'You have reached the maximum number of requests for this event.');

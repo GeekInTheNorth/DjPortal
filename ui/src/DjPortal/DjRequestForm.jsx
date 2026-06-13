@@ -58,6 +58,9 @@ function DjRequestForm() {
         try {
             await axios.post(import.meta.env.VITE_APP_REQUESTS_SUBMIT, requestData);
             await getMusicRequests(selectedEvent);
+            setTrackName('');
+            setTrackBpm(0);
+            setTrackTime('');
         } catch (error) {
             console.error('Error submitting request', error);
         }
