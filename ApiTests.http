@@ -24,4 +24,28 @@ OPTIONS {{rooturl}}/api/tracks/search?query={{trackSearchTerm}}
 DELETE {{rooturl}}/api/events/deletecache
 x-ms-client-principal: {{fakeprincipal}}
 
+### Make Requesst
+POST {{rooturl}}/api/musicrequest/create
+Content-Type: application/json
+
+{
+    "eventId":"459c5d02-2c58-41ff-856b-8f410317fee9",
+    "musicRequest":"Test no bpm or time",
+    "requestedBy":"From The Floor",
+    "bpm": null,
+    "time":""
+}
+
+### Make Request with string bpm
+POST {{rooturl}}/api/musicrequest/create
+Content-Type: application/json
+
+{
+    "eventId":"459c5d02-2c58-41ff-856b-8f410317fee9",
+    "musicRequest":"Test string bpm",
+    "requestedBy":"From The Floor",
+    "bpm": "116.0",
+    "time":""
+}
+
 ###
