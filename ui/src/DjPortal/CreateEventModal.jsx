@@ -35,6 +35,11 @@ function CreateEventModal()
         {
             setLocationName('West Park Rugby Club');
             setLocationAddress('Bramhope, Leeds, LS16 9JR');
+        } else if (value.includes('Energise'))
+        {
+            setLocationName('Collingham Memorial Hall');
+            setLocationAddress('Main Street, Collingham, LS22 5AS');
+            setEventTimes('15:00 - 18:30');
         }
     }
 
