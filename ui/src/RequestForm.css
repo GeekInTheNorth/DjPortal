@@ -1,0 +1,61 @@
+.request-track-field {
+  position: relative;
+}
+
+.request-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-top: 0.25rem;
+  max-height: 15rem;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.175);
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.request-suggestions .list-group-item {
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+.request-suggestions .list-group-item:first-child {
+  border-top: 0;
+}
+
+.request-suggestions .list-group-item .btn-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  white-space: normal;
+}
+
+.request-suggestions .list-group-item.active,
+.request-suggestions .list-group-item:hover {
+  background-color: #e9ecef;
+  border-color: rgba(0, 0, 0, 0.175);
+  color: inherit;
+  z-index: auto;
+}
+
+.request-suggestions .request-suggestions-empty {
+  padding: 0.5rem 0.75rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.request-track-spinner {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  margin-top: -0.5rem;
+  line-height: 0;
+  z-index: 1001;
+}
