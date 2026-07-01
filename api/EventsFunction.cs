@@ -111,6 +111,18 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         return CreateEmptyResponse(req);
     }
 
+    [Function("UpdateEventIndex")]
+    public async Task<HttpResponseData> UpdateEventIndex([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "events/updateindex")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var _);
+        if (authResponse != null) return authResponse;
+
+        await eventService.UpdateEventIndex();
+
+        return CreateEmptyResponse(req);
+    }
+
     [Function("DeleteExpiredEvents")]
     public async Task<HttpResponseData> DeleteExpiredEvents([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deleteexpired")] HttpRequestData req)
     {

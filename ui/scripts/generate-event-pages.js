@@ -103,6 +103,23 @@ function renderRequestStatus(event) {
     return '';
 }
 
+function buildOrganizer(event) {
+    if (event.organizer === 'Ceroc Yorkshire') {
+        return {
+            "@type": "Organization",
+            "name": "Ceroc Yorkshire",
+            "url": "https://www.facebook.com/CerocYorkshire",
+            "sameAs": "https://www.ceroc.com"
+        };
+    }
+
+    return {
+        "@type": "Person",
+        "name": "DJ Mark",
+        "url": SITE_BASE_URL
+    };
+}
+
 function buildSchemaJsonLd(event) {
     const dateStr = formatDateISO(event.date);
 
@@ -123,11 +140,7 @@ function buildSchemaJsonLd(event) {
                 "streetAddress": event.locationAddress
             }
         },
-        "organizer": {
-            "@type": "Person",
-            "name": "DJ Mark",
-            "url": SITE_BASE_URL
-        },
+        "organizer": buildOrganizer(event),
         "performer": {
             "@type": "Person",
             "name": "DJ Mark"

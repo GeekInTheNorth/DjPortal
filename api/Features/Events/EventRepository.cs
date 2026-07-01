@@ -24,6 +24,7 @@ public sealed class EventRepository(IConfiguration configuration) : BaseReposito
             eventDetails.LocationAddress,
             eventDetails.FacebookEventId,
             eventDetails.Tags,
+            eventDetails.Organizer,
             eventDetails.IsRequestable,
             eventDetails.GenerateSchemaData
         }]);
@@ -47,6 +48,7 @@ public sealed class EventRepository(IConfiguration configuration) : BaseReposito
             eventDetails.LocationAddress,
             eventDetails.FacebookEventId,
             eventDetails.Tags,
+            eventDetails.Organizer,
             eventDetails.IsRequestable,
             eventDetails.GenerateSchemaData,
             eventDetails.IsCancelled
@@ -102,7 +104,21 @@ public sealed class EventRepository(IConfiguration configuration) : BaseReposito
         }
 
         await searchIndexClient.DeleteIndexAsync(AppConstants.EventIndexName);
+        await searchIndexClient.CreateIndexAsync(BuildEventIndex());
+    }
 
+    public async Task UpdateEventIndex()
+    {
+        if (!TryCreateSearchIndexClient(out var searchIndexClient))
+        {
+            return;
+        }
+
+        await searchIndexClient.CreateOrUpdateIndexAsync(BuildEventIndex());
+    }
+
+    private static SearchIndex BuildEventIndex()
+    {
         var idField = new SimpleField(nameof(EventDetails.Id), SearchFieldDataType.String) { IsKey = true, IsFilterable = true, IsSortable = true };
 
         var eventNameField = new SearchableField(nameof(EventDetails.Name))
@@ -153,8 +169,14 @@ public sealed class EventRepository(IConfiguration configuration) : BaseReposito
         };
 
         var tagsField = new SimpleField(nameof(EventDetails.Tags), SearchFieldDataType.String)
-        { 
-            IsFilterable = true, 
+        {
+            IsFilterable = true,
+            IsSortable = true
+        };
+
+        var organizerField = new SimpleField(nameof(EventDetails.Organizer), SearchFieldDataType.String)
+        {
+            IsFilterable = true,
             IsSortable = true
         };
 
@@ -176,22 +198,23 @@ public sealed class EventRepository(IConfiguration configuration) : BaseReposito
             IsSortable = false
         };
 
-        await searchIndexClient.CreateIndexAsync(new SearchIndex(AppConstants.EventIndexName)
+        return new SearchIndex(AppConstants.EventIndexName)
         {
-            Fields = { 
-                idField, 
-                eventNameField, 
-                descriptionField, 
-                timesField, 
-                eventDateField, 
-                locationNameField, 
-                locationAddressField, 
-                facebookEventIdField, 
+            Fields = {
+                idField,
+                eventNameField,
+                descriptionField,
+                timesField,
+                eventDateField,
+                locationNameField,
+                locationAddressField,
+                facebookEventIdField,
                 tagsField,
+                organizerField,
                 isRequestableField,
                 generateSchemaDataField,
                 isCancelledField
             }
-        });
+        };
     }
 }

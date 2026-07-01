@@ -15,6 +15,7 @@ function CreateEventModal()
     const [eventTimes, setEventTimes] = useState('20:00 - 23:30');
     const [facebookEventId, setFacebookEventId] = useState('');
     const [tags, setTags] = useState('');
+    const [organizer, setOrganizer] = useState('DJ Mark');
     const [isRequestable, setIsRequestable] = useState(false);
 
     const { getEventCollection } = useContext(AppContext);
@@ -54,6 +55,7 @@ function CreateEventModal()
         setFacebookEventId('');
         setShowModal(false);
         setTags('');
+        setOrganizer('DJ Mark');
         setIsRequestable(false);
     }
 
@@ -69,6 +71,7 @@ function CreateEventModal()
             times: eventTimes,
             facebookEventId: facebookEventId,
             tags: tags,
+            organizer: organizer,
             isRequestable: isRequestable
         };
 
@@ -130,6 +133,13 @@ function CreateEventModal()
                         <Form.Group className='mb-3'>
                             <Form.Label>Tags</Form.Label>
                             <Form.Control type='text' placeholder='e.g. tag-one, tag-two' value={tags} onChange={(event) => setTags(event.target.value)} />
+                        </Form.Group>
+                        <Form.Group className='mb-3'>
+                            <Form.Label>Organizer</Form.Label>
+                            <Form.Select value={organizer} onChange={(event) => setOrganizer(event.target.value)}>
+                                <option value='DJ Mark'>DJ Mark</option>
+                                <option value='Ceroc Yorkshire'>Ceroc Yorkshire</option>
+                            </Form.Select>
                         </Form.Group>
                         <Form.Group className='mb-3'>
                             <Form.Check type='switch' label='Is this event requestable?' checked={isRequestable} onChange={(event) => setIsRequestable(event.target.checked) } />

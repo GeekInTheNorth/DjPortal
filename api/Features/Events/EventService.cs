@@ -48,6 +48,12 @@ public sealed class EventService(
         cache.Remove(CacheKey);
     }
 
+    public async Task UpdateEventIndex()
+    {
+        await eventRepository.UpdateEventIndex();
+        cache.Remove(CacheKey);
+    }
+
     public async Task<EventDetails?> Get(Guid id)
     {
         var cachedEvents = await GetCachedEventList();

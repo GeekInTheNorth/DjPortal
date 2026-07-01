@@ -26,6 +26,8 @@ public class CreateEventModel : IEventDetailsData
 
     public string? Tags { get; set; }
 
+    public string? Organizer { get; set; }
+
     public bool IsRequestable { get; set; }
 
     public bool GenerateSchemaData { get; set; }

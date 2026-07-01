@@ -64,6 +64,8 @@ public sealed class EventDetails : IEventDetailsData
 
     public string? Tags { get; set; }
 
+    public string? Organizer { get; set; }
+
     public IEnumerable<EventDetailTag> TagList => GetTags();
 
     public string ImageUrl

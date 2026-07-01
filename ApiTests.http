@@ -24,6 +24,10 @@ OPTIONS {{rooturl}}/api/tracks/search?query={{trackSearchTerm}}
 DELETE {{rooturl}}/api/events/deletecache
 x-ms-client-principal: {{fakeprincipal}}
 
+### Update Event Index (non-destructive - adds new fields to existing index)
+POST {{rooturl}}/api/events/updateindex
+x-ms-client-principal: {{fakeprincipal}}
+
 ### Make Requesst
 POST {{rooturl}}/api/musicrequest/create
 Content-Type: application/json

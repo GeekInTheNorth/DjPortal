@@ -18,6 +18,8 @@ public interface IEventDetailsData
 
     string? Tags { get; set; }
 
+    string? Organizer { get; set; }
+
     bool IsRequestable { get; set; }
 
     bool GenerateSchemaData { get; set; }

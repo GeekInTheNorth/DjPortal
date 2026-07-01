@@ -16,6 +16,7 @@ function UpdateEventModal(props)
     const [eventTimes, setEventTimes] = useState(props.eventData?.times ?? '20:00 - 23:30');
     const [facebookEventId, setFacebookEventId] = useState(props.eventData?.facebookEventId ?? '');
     const [tags, setTags] = useState(props.eventData?.tags ?? '');
+    const [organizer, setOrganizer] = useState(props.eventData?.organizer ?? 'DJ Mark');
     const [isRequestable, setIsRequestable] = useState(props.eventData?.isRequestable ?? false);
     const { getEventCollection } = useContext(AppContext);
 
@@ -52,6 +53,7 @@ function UpdateEventModal(props)
             times: eventTimes,
             facebookEventId: facebookEventId,
             tags: tags,
+            organizer: organizer,
             isRequestable: isRequestable
         };
 
@@ -118,6 +120,13 @@ function UpdateEventModal(props)
                             <Form.Control type='text' placeholder='e.g. tag-one, tag-two' value={tags} onChange={(event) => setTags(event.target.value)} />
                         </Form.Group>
                         <Form.Group className='mb-3'>
+                            <Form.Label>Organizer</Form.Label>
+                            <Form.Select value={organizer} onChange={(event) => setOrganizer(event.target.value)}>
+                                <option value='DJ Mark'>DJ Mark</option>
+                                <option value='Ceroc Yorkshire'>Ceroc Yorkshire</option>
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className='mb-3'>
                             <Form.Check type='switch' label='Is this event requestable?' checked={isRequestable} onChange={(event) => setIsRequestable(event.target.checked) } />
                         </Form.Group>
                     </ModalBody>
@@ -143,6 +152,7 @@ UpdateEventModal.propTypes = {
         facebookEventId: PropTypes.string,
         tagList: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
         tags: PropTypes.string,
+        organizer: PropTypes.string,
         isRequestable: PropTypes.bool
     })
 };

@@ -10,6 +10,8 @@ public interface IEventService
 
     Task DeleteAndCreateEventIndex();
 
+    Task UpdateEventIndex();
+
     Task DeleteExpiredEvents();
 
     Task<EventDetails?> Get(Guid id);

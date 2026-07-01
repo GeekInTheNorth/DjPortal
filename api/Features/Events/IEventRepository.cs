@@ -11,4 +11,6 @@ public interface IEventRepository
     Task<IList<EventDetails>> List();
 
     Task DeleteAndCreateEventIndex();
+
+    Task UpdateEventIndex();
 }
