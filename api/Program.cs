@@ -1,3 +1,4 @@
+using DjPortalApi.Features.AiChat;
 using DjPortalApi.Features.Contact;
 using DjPortalApi.Features.Deployment;
 using DjPortalApi.Features.Events;
@@ -27,7 +28,9 @@ builder.Services
     .AddScoped<IEventService, EventService>()
     .AddScoped<IInsightsService, InsightsService>()
     .AddScoped<IRequestRepository, RequestRepository>()
+    .AddScoped<IRequestService, RequestService>()
     .AddScoped<ISpotifyService, SpotifyService>()
-    .AddScoped<ITrackRepository, TrackRepository>();
+    .AddScoped<ITrackRepository, TrackRepository>()
+    .AddScoped<IAiChatService, AiChatService>();
 
 builder.Build().Run();

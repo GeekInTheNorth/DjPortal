@@ -98,6 +98,38 @@ public partial class SpotifyService : ISpotifyService
         return await JsonSerializer.DeserializeAsync<SpotifyTrack>(responseStream, options);
     }
 
+    public async Task<IList<SpotifyTrack>> SearchTracks(string query, int limit = 5)
+    {
+        if (!_spotifySettings.IsConfigured || string.IsNullOrWhiteSpace(query))
+        {
+            return Array.Empty<SpotifyTrack>();
+        }
+
+        await Authenticate();
+        if (string.IsNullOrEmpty(_accessToken))
+        {
+            return Array.Empty<SpotifyTrack>();
+        }
+
+        var uri = $"https://api.spotify.com/v1/search?type=track&limit={limit}&q={Uri.EscapeDataString(query)}";
+        var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+        var response = await _httpClient.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            return Array.Empty<SpotifyTrack>();
+        }
+
+        var responseStream = await response.Content.ReadAsStreamAsync();
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+        var result = await JsonSerializer.DeserializeAsync<SpotifySearchResponse>(responseStream, options);
+        return result?.Tracks?.Items ?? new List<SpotifyTrack>();
+    }
+
     public bool TryGetSpotifyId(string? url, [NotNullWhen(true)] out string? id)
     {
         id = null;
@@ -118,5 +150,17 @@ public partial class SpotifyService : ISpotifyService
 
         [JsonPropertyName("expires_in")]
         public int ExpiresIn { get; set; }
+    }
+
+    private class SpotifySearchResponse
+    {
+        [JsonPropertyName("tracks")]
+        public SpotifyTrackPage? Tracks { get; set; }
+    }
+
+    private class SpotifyTrackPage
+    {
+        [JsonPropertyName("items")]
+        public List<SpotifyTrack>? Items { get; set; }
     }
 }

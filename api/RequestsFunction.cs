@@ -1,7 +1,6 @@
 using DjPortalApi.Features;
 using DjPortalApi.Features.Extensions;
 using DjPortalApi.Features.Requests;
-using DjPortalApi.Features.Spotify;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
@@ -9,7 +8,7 @@ namespace DjPortalApi;
 
 public class MusicRequestFunction(
     IRequestRepository requestRepository,
-    ISpotifyService spotifyService) : BaseFunction
+    IRequestService requestService) : BaseFunction
 {
     [Function("GetMusicRequests")]
     public async Task<HttpResponseData> GetMusicRequests([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "musicrequest/list/")] HttpRequestData req)
@@ -46,39 +45,15 @@ public class MusicRequestFunction(
 
         var existingUserCookie = GetUserCookieOrDefault(req, out var userId);
 
-        // Customers can only request a limited number of tracks.
-        // Customers are never authenticated.
+        // Customers can only request a limited number of tracks. Customers are never authenticated.
         var user = GetAuthenticatedUser(req);
-        if (user is not { IsAuthenticated: true })
+        var isAuthenticated = user is { IsAuthenticated: true };
+
+        var result = await requestService.CreateAsync(eventId, userId, isAuthenticated, model);
+        if (result.Outcome == CreateRequestOutcome.QuotaExceeded)
         {
-            var requestCount = await requestRepository.GetCountByUserAndEvent(eventId, userId);
-            if (requestCount >= AppConstants.MaxAnonymousRequestsPerEvent)
-            {
-                return await CreateResponseAsync(req, System.Net.HttpStatusCode.Conflict, new { message = AppConstants.MaxRequestsExceededMessage }, !existingUserCookie, userId);
-            }
+            return await CreateResponseAsync(req, System.Net.HttpStatusCode.Conflict, new { message = result.Message }, !existingUserCookie, userId);
         }
-
-        var newRequest = new MusicRequest
-        {
-            Id = Guid.NewGuid(),
-            EventId = eventId,
-            UserId = userId,
-            UserName = model.RequestedBy,
-            TrackName = model.MusicRequest,
-            BPM = model.SafeBpm,
-            Time = model.Time,
-            IsFinalized = true
-        };
-
-        // The DJ gets an auto approval on new requests and a random user id to make each request a uniquely owned request
-        if (user is { IsAuthenticated: true})
-        {
-            newRequest.Status = RequestStatus.Approved.ToString();
-            newRequest.UserId = Guid.NewGuid();
-        }
-
-        newRequest = await ProcessSpotifyUrl(newRequest);
-        await requestRepository.Add(newRequest);
 
         return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK, !existingUserCookie, userId);
     }
@@ -129,28 +104,6 @@ public class MusicRequestFunction(
         await requestRepository.DeleteAndCreateRequestIndex();
 
         return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK);
-    }
-
-    private async Task<MusicRequest> ProcessSpotifyUrl(MusicRequest request)
-    {
-        if (spotifyService.TryGetSpotifyId(request.TrackName, out var trackId))
-        {
-            request.SpotifyUrl = request.TrackName;
-            var spotifyTrack = await spotifyService.GetTrack(trackId);
-            if (spotifyTrack != null)
-            {
-                var songName = spotifyTrack.Name;
-                var artistList = spotifyTrack.Artists?.Select(x => x.Name).ToList();
-                var artist = artistList != null ? string.Join(", ", artistList) : "Unknown Artist";
-                request.TrackName = $"{songName} - {artist}";
-            }
-            else
-            {
-                request.TrackName = "See Link:";
-            }
-        }
-
-        return request;
     }
 
     private static IEnumerable<MusicRequest> FilterForVisitor(IList<MusicRequest> requests, Guid userId)

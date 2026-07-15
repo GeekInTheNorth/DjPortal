@@ -27,3 +27,7 @@ project.lock.json
 *.pyc
 
 .vs/
+
+# Azurite
+.azurite/
+azurite-data/
