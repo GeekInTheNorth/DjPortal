@@ -56,6 +56,33 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         }
     }
 
+    public async Task<string?> GetUserName(Guid userId)
+    {
+        if (!TryCreateSearchClient(AppConstants.RequestsIndexName, out var searchClient))
+        {
+            return null;
+        }
+
+        try
+        {
+            // Cookie identity persists across events, so we look the dancer up by UserId alone.
+            var options = new SearchOptions
+            {
+                Size = 10,
+                Filter = $"{nameof(MusicRequest.UserId)} eq '{userId}'"
+            };
+
+            var response = await searchClient.SearchAsync<MusicRequest>(options);
+            return response.Value.GetResults()
+                .Select(x => x.Document.UserName)
+                .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task Delete(Guid requestId)
     {
         if (!TryCreateSearchClient(AppConstants.RequestsIndexName, out var searchClient))

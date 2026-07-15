@@ -14,20 +14,25 @@ public sealed class AiChatService : IAiChatService
 {
     private const int MaxToolIterations = 5;
 
+    private const string DefaultRequestorName = "From the Floor";
+
     private readonly ChatClient? _chatClient;
     private readonly ITrackRepository _trackRepository;
     private readonly ISpotifyService _spotifyService;
     private readonly IRequestService _requestService;
+    private readonly IRequestRepository _requestRepository;
 
     public AiChatService(
         IConfiguration configuration,
         ITrackRepository trackRepository,
         ISpotifyService spotifyService,
-        IRequestService requestService)
+        IRequestService requestService,
+        IRequestRepository requestRepository)
     {
         _trackRepository = trackRepository;
         _spotifyService = spotifyService;
         _requestService = requestService;
+        _requestRepository = requestRepository;
 
         var endpoint = configuration.GetValue<string>("AzureOpenAiEndpoint");
         var apiKey = configuration.GetValue<string>("AzureOpenAiApiKey");
@@ -55,7 +60,10 @@ public sealed class AiChatService : IAiChatService
             };
         }
 
-        var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails)) };
+        var knownName = await _requestRepository.GetUserName(userId);
+        var userMessageCount = history.Count(m => !string.Equals(m.Role, "assistant", StringComparison.OrdinalIgnoreCase));
+
+        var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails, knownName, userMessageCount)) };
         foreach (var message in history)
         {
             var content = message.Content ?? string.Empty;
@@ -85,7 +93,7 @@ public sealed class AiChatService : IAiChatService
                 messages.Add(new AssistantChatMessage(completion));
                 foreach (var toolCall in completion.ToolCalls)
                 {
-                    var (resultJson, submitted) = await ExecuteToolAsync(toolCall, eventDetails, userId, isAuthenticated);
+                    var (resultJson, submitted) = await ExecuteToolAsync(toolCall, eventDetails, userId, isAuthenticated, knownName);
                     requestSubmitted = requestSubmitted || submitted;
                     messages.Add(new ToolChatMessage(toolCall.Id, resultJson));
                 }
@@ -108,7 +116,8 @@ public sealed class AiChatService : IAiChatService
         ChatToolCall toolCall,
         EventDetails eventDetails,
         Guid userId,
-        bool isAuthenticated)
+        bool isAuthenticated,
+        string? knownName)
     {
         JsonElement root;
         try
@@ -156,9 +165,10 @@ public sealed class AiChatService : IAiChatService
                     return (JsonSerializer.Serialize(new { success = false, error = "A track is required before submitting." }), false);
                 }
 
+                // Never block a submission on a missing name: fall back to the known cookie name, then a default.
                 if (string.IsNullOrWhiteSpace(requestedBy))
                 {
-                    return (JsonSerializer.Serialize(new { success = false, error = "The requester's name is required before submitting." }), false);
+                    requestedBy = !string.IsNullOrWhiteSpace(knownName) ? knownName : DefaultRequestorName;
                 }
 
                 var model = new MusicRequestModel
@@ -185,19 +195,42 @@ public sealed class AiChatService : IAiChatService
         }
     }
 
-    private static string BuildSystemPrompt(EventDetails eventDetails)
+    private static string BuildSystemPrompt(EventDetails eventDetails, string? knownName, int userMessageCount)
     {
+        var nameGuidance = string.IsNullOrWhiteSpace(knownName)
+            ? $"""
+              - You do not yet know the dancer's name. Ask for it once, casually. If they give it, use it.
+              - Do NOT keep pestering for a name. They have sent {userMessageCount} message(s) so far — if you
+                reach roughly 3-4 messages without a name, assume they won't give one and just use '{DefaultRequestorName}'.
+              """
+            : $"""
+              - The dancer is known as '{knownName}' from their previous requests. Use this name and do NOT ask
+                for it — only change it if they explicitly give a different name.
+              """;
+
         return $"""
             You are DJ Mark's friendly music request assistant for the event "{eventDetails.Name}".
+            This is a modern jive / ceroc dance event, so tracks should be danceable at a partner-dance tempo.
             Help the dancer find a track and submit a request.
 
-            Rules:
-            - Use search_tracks FIRST to look in DJ Mark's own library. Prefer suggesting tracks it returns.
-            - Only use search_spotify if the library has nothing suitable. When submitting a Spotify result, pass its url as spotifyUrl.
-            - Before calling submit_request you MUST know the exact track and the requester's name. Ask for the name if you don't have it. If the user declines to share their name, then use 'From the Floor' as their name.
-            - Always confirm the track and name with the user in a message before calling submit_request.
+            Finding music:
+            - When the dancer is vague (e.g. "some swing", "something upbeat", "a smoochy one"), use your own
+              music knowledge to brainstorm several SPECIFIC artists and songs that fit the vibe AND suit modern
+              jive dancing (think what a good ceroc DJ would play for that request).
+            - Then cross-reference those candidates against the tools: call search_tracks (DJ Mark's own library)
+              and search_spotify to see which actually exist. Prefer tracks found in Mark's library, but you may
+              also suggest well-known real tracks you found on Spotify or know from your own knowledge.
+            - Offer a short shortlist of concrete options by name rather than asking the dancer to be more specific.
+            - When submitting a Spotify result, pass its url as spotifyUrl.
+
+            The requester's name:
+            {nameGuidance}
+
+            Submitting:
+            - Confirm the chosen track with the user in a message before calling submit_request.
             - When a submission fails, relay the returned error message to the user word for word.
-            - Keep replies short and warm. Do not invent tracks that search tools did not return.
+
+            Keep replies short and warm. Suggest real songs and artists — never make up song titles that do not exist.
             """;
     }
 
@@ -251,18 +284,18 @@ public sealed class AiChatService : IAiChatService
 
     private static readonly ChatTool SubmitRequestTool = ChatTool.CreateFunctionTool(
         "submit_request",
-        "Submit the chosen track as a request for this event. Only call after confirming the track and requester name with the user.",
+        "Submit the chosen track as a request for this event. Only call after confirming the track with the user.",
         BinaryData.FromString("""
             {
               "type": "object",
               "properties": {
                 "trackName": { "type": "string", "description": "The track as 'Title, Artist'." },
-                "requestedBy": { "type": "string", "description": "The name the dancer gave." },
+                "requestedBy": { "type": "string", "description": "The dancer's name if known; omit if they haven't given one." },
                 "bpm": { "type": "number", "description": "Optional beats per minute from a library result." },
                 "time": { "type": "string", "description": "Optional timing/length from a library result." },
                 "spotifyUrl": { "type": "string", "description": "The spotify track url, when the track came from search_spotify." }
               },
-              "required": ["trackName", "requestedBy"]
+              "required": ["trackName"]
             }
             """));
 }
