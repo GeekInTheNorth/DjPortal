@@ -1,6 +1,6 @@
 import { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from './AppContext.jsx';
-import { Form, Card, Button, Spinner } from 'react-bootstrap';
+import { Form, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import './AiChat.css';
 
@@ -48,40 +48,37 @@ function AiChat() {
     };
 
     return (
-        <Card className='my-3'>
-            <Card.Header className='bg-primary text-light fw-bold'>Request a Track with AI</Card.Header>
-            <Card.Body>
-                <div className='ai-chat-messages'>
-                    {messages.map((message, index) => (
-                        <div key={index} className={`ai-chat-row ai-chat-row-${message.role}`}>
-                            <div className={`ai-chat-bubble ai-chat-bubble-${message.role}`}>
-                                {message.content}
-                            </div>
+        <>
+            <div className='ai-chat-messages'>
+                {messages.map((message, index) => (
+                    <div key={index} className={`ai-chat-row ai-chat-row-${message.role}`}>
+                        <div className={`ai-chat-bubble ai-chat-bubble-${message.role}`}>
+                            {message.content}
                         </div>
-                    ))}
-                    {isSending && (
-                        <div className='ai-chat-row ai-chat-row-assistant'>
-                            <div className='ai-chat-bubble ai-chat-bubble-assistant'>
-                                <Spinner animation='border' size='sm' variant='primary' role='status' aria-label="DJ Mark's assistant is thinking" />
-                                <span className='ms-2'>Thinking…</span>
-                            </div>
+                    </div>
+                ))}
+                {isSending && (
+                    <div className='ai-chat-row ai-chat-row-assistant'>
+                        <div className='ai-chat-bubble ai-chat-bubble-assistant'>
+                            <Spinner animation='border' size='sm' variant='primary' role='status' aria-label="DJ Mark's assistant is thinking" />
+                            <span className='ms-2'>Thinking…</span>
                         </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                </div>
-                <Form onSubmit={handleSend} className='ai-chat-input mt-3'>
-                    <Form.Control
-                        type='text'
-                        placeholder='Type your message…'
-                        value={input}
-                        onChange={(event) => setInput(event.target.value)}
-                        disabled={isSending}
-                        autoComplete='off'
-                    />
-                    <Button type='submit' disabled={isSending || !input.trim()}>Send</Button>
-                </Form>
-            </Card.Body>
-        </Card>
+                    </div>
+                )}
+                <div ref={messagesEndRef} />
+            </div>
+            <Form onSubmit={handleSend} className='ai-chat-input mt-3'>
+                <Form.Control
+                    type='text'
+                    placeholder='Type your message…'
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    disabled={isSending}
+                    autoComplete='off'
+                />
+                <Button type='submit' disabled={isSending || !input.trim()}>Send</Button>
+            </Form>
+        </>
     );
 }
 

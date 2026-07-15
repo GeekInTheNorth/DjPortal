@@ -1,6 +1,6 @@
 import { useContext, useState, useCallback } from 'react'
 import { AppContext } from './AppContext.jsx';
-import { Form, Card, FormGroup, Button, Spinner } from 'react-bootstrap';
+import { Form, FormGroup, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import './RequestForm.css';
 
@@ -224,41 +224,36 @@ function RequestForm() {
 
     const renderForm = () => {
         return (
-            <Card className='my-3'>
-                <Card.Header className='bg-primary text-light fw-bold'>Request a Track</Card.Header>
-                <Card.Body>
-                    <Form>
-                        { errorMessage && <div className='alert alert-warning' role='alert'>{errorMessage}</div> }
-                        <FormGroup className='mb-3' controlId='formRequestor'>
-                            <Form.Label className='fw-bold d-block'>Your Name</Form.Label>
-                            <div className='form-text'>Your name will only be visible to you and the DJ.</div>
-                            <Form.Control type='text' placeholder='Your Name' value={requestorName} onChange={handleRequestorNameChange} required={true} />
-                        </FormGroup>
-                        <FormGroup className='mb-3' controlId='formMusicRequest'>
-                            <Form.Label className='fw-bold d-block'>Your Request</Form.Label>
-                            <div className='form-text'>Enter an <strong>artist</strong>, <strong>song name</strong> or <strong>spotify</strong> link here.  Optionally you can you click or tap on a suggestion as they appear and it will complete this field ready to submit.</div>
-                            <div className='request-track-field'>
-                                <Form.Control
-                                    type='text'
-                                    placeholder='Enter a track name and artist here'
-                                    value={trackName}
-                                    onChange={handleTrackNameChange}
-                                    onKeyDown={handleTrackNameKeyDown}
-                                    onFocus={handleTrackNameFocus}
-                                    onBlur={handleTrackNameBlur}
-                                    autoComplete='off'
-                                    required={true}
-                                />
-                                { isSearching && <span className='request-track-spinner'><Spinner animation='border' size='sm' variant='primary' role='status' aria-label='Searching tracks' /></span> }
-                                { renderDropdown() }
-                            </div>
-                        </FormGroup>
-                        <Form.Group className='my-3'>
-                            <Button type='submit' onClick={handleSubmitRequest}>Submit Your Request</Button>
-                        </Form.Group>
-                    </Form>
-                </Card.Body>
-            </Card>
+            <Form>
+                { errorMessage && <div className='alert alert-warning' role='alert'>{errorMessage}</div> }
+                <FormGroup className='mb-3' controlId='formRequestor'>
+                    <Form.Label className='fw-bold d-block'>Your Name</Form.Label>
+                    <div className='form-text'>Your name will only be visible to you and the DJ.</div>
+                    <Form.Control type='text' placeholder='Your Name' value={requestorName} onChange={handleRequestorNameChange} required={true} />
+                </FormGroup>
+                <FormGroup className='mb-3' controlId='formMusicRequest'>
+                    <Form.Label className='fw-bold d-block'>Your Request</Form.Label>
+                    <div className='form-text'>Enter an <strong>artist</strong>, <strong>song name</strong> or <strong>spotify</strong> link here.  Optionally you can you click or tap on a suggestion as they appear and it will complete this field ready to submit.</div>
+                    <div className='request-track-field'>
+                        <Form.Control
+                            type='text'
+                            placeholder='Enter a track name and artist here'
+                            value={trackName}
+                            onChange={handleTrackNameChange}
+                            onKeyDown={handleTrackNameKeyDown}
+                            onFocus={handleTrackNameFocus}
+                            onBlur={handleTrackNameBlur}
+                            autoComplete='off'
+                            required={true}
+                        />
+                        { isSearching && <span className='request-track-spinner'><Spinner animation='border' size='sm' variant='primary' role='status' aria-label='Searching tracks' /></span> }
+                        { renderDropdown() }
+                    </div>
+                </FormGroup>
+                <Form.Group>
+                    <Button type='submit' onClick={handleSubmitRequest}>Submit Your Request</Button>
+                </Form.Group>
+            </Form>
         )
     };
 
