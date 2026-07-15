@@ -1,0 +1,20 @@
+/* The page body is black, so inactive tabs (transparent by default) would show through.
+   Give them a muted background so they read as unselected tabs. */
+.request-tabs .nav-link {
+    background-color: #e9ecef;
+    color: #212529;
+    border-color: #dee2e6;
+    margin-right: 2px;
+}
+
+.request-tabs .nav-link:hover {
+    background-color: #dde1e5;
+    border-color: #dee2e6;
+}
+
+.request-tabs .nav-link.active {
+    background-color: #fff;
+    color: #212529;
+    border-bottom-color: #fff;
+    font-weight: 600;
+}

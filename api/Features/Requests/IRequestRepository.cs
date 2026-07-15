@@ -14,5 +14,7 @@ public interface IRequestRepository
 
     Task<int> GetCountByUserAndEvent(Guid eventId, Guid userId);
 
+    Task<string?> GetUserName(Guid userId);
+
     Task DeleteAndCreateRequestIndex();
 }
