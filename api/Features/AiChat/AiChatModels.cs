@@ -19,4 +19,6 @@ public sealed class AiChatResponse
     public string Reply { get; set; } = string.Empty;
 
     public bool RequestSubmitted { get; set; }
+
+    public List<string>? Options { get; set; }
 }

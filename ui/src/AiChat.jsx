@@ -10,23 +10,24 @@ function AiChat() {
     const { selectedEvent, getMusicRequests } = useContext(AppContext);
     const [messages, setMessages] = useState([{ role: 'assistant', content: GREETING }]);
     const [input, setInput] = useState('');
+    const [options, setOptions] = useState([]);
     const [isSending, setIsSending] = useState(false);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, isSending]);
+    }, [messages, options, isSending]);
 
-    const handleSend = async (event) => {
-        event.preventDefault();
-        const text = input.trim();
-        if (!text || isSending) {
+    const sendMessage = async (text) => {
+        const trimmed = text.trim();
+        if (!trimmed || isSending) {
             return;
         }
 
-        const nextMessages = [...messages, { role: 'user', content: text }];
+        const nextMessages = [...messages, { role: 'user', content: trimmed }];
         setMessages(nextMessages);
         setInput('');
+        setOptions([]);
         setIsSending(true);
 
         try {
@@ -36,6 +37,7 @@ function AiChat() {
             });
             const reply = response?.data?.reply || "Sorry, I didn't catch that. Could you try rephrasing?";
             setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+            setOptions(Array.isArray(response?.data?.options) ? response.data.options : []);
 
             if (response?.data?.requestSubmitted) {
                 getMusicRequests(selectedEvent);
@@ -45,6 +47,11 @@ function AiChat() {
         } finally {
             setIsSending(false);
         }
+    };
+
+    const handleSend = (event) => {
+        event.preventDefault();
+        sendMessage(input);
     };
 
     return (
@@ -67,6 +74,15 @@ function AiChat() {
                 )}
                 <div ref={messagesEndRef} />
             </div>
+            {options.length > 0 && !isSending && (
+                <div className='ai-chat-options mt-3'>
+                    {options.map((option, index) => (
+                        <Button key={index} variant='outline-primary' size='sm' onClick={() => sendMessage(option)}>
+                            {option}
+                        </Button>
+                    ))}
+                </div>
+            )}
             <Form onSubmit={handleSend} className='ai-chat-input mt-3'>
                 <Form.Control
                     type='text'

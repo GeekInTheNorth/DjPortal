@@ -79,10 +79,11 @@ public sealed class AiChatService : IAiChatService
 
         var options = new ChatCompletionOptions
         {
-            Tools = { SearchTracksTool, WebSearchTool, SubmitRequestTool }
+            Tools = { SearchTracksTool, WebSearchTool, SubmitRequestTool, PresentOptionsTool }
         };
 
         var requestSubmitted = false;
+        List<string>? quickReplies = null;
 
         for (var iteration = 0; iteration < MaxToolIterations; iteration++)
         {
@@ -93,6 +94,14 @@ public sealed class AiChatService : IAiChatService
                 messages.Add(new AssistantChatMessage(completion));
                 foreach (var toolCall in completion.ToolCalls)
                 {
+                    // present_options only carries UI quick-replies back to the caller; it does no work.
+                    if (string.Equals(toolCall.FunctionName, "present_options", StringComparison.Ordinal))
+                    {
+                        quickReplies = ParseOptions(toolCall);
+                        messages.Add(new ToolChatMessage(toolCall.Id, "{\"shown\":true}"));
+                        continue;
+                    }
+
                     var (resultJson, submitted) = await ExecuteToolAsync(toolCall, eventDetails, userId, isAuthenticated, knownName);
                     requestSubmitted = requestSubmitted || submitted;
                     messages.Add(new ToolChatMessage(toolCall.Id, resultJson));
@@ -102,13 +111,14 @@ public sealed class AiChatService : IAiChatService
             }
 
             var reply = completion.Content.Count > 0 ? completion.Content[0].Text : string.Empty;
-            return new AiChatResponse { Reply = reply, RequestSubmitted = requestSubmitted };
+            return new AiChatResponse { Reply = reply, RequestSubmitted = requestSubmitted, Options = quickReplies };
         }
 
         return new AiChatResponse
         {
             Reply = "Sorry, I couldn't finish that. Please try again, or use the standard request form below.",
-            RequestSubmitted = requestSubmitted
+            RequestSubmitted = requestSubmitted,
+            Options = quickReplies
         };
     }
 
@@ -217,6 +227,9 @@ public sealed class AiChatService : IAiChatService
               chart hits that may be beyond your own knowledge (e.g. an artist's latest single). Cross-reference what
               you find, then suggest real tracks.
             - Offer a short shortlist of concrete options by name rather than asking the dancer to be more specific.
+            - Whenever your message asks the dancer to choose, call present_options so they can TAP their answer
+              instead of typing: offer each suggested track as an option, and for confirmations offer choices like
+              'Yes, request it' and 'Show me others'. The option labels must be exactly what they'd reply.
 
             The requester's name:
             {nameGuidance}
@@ -227,6 +240,29 @@ public sealed class AiChatService : IAiChatService
 
             Keep replies short and warm. Suggest real songs and artists — never make up song titles that do not exist.
             """;
+    }
+
+    private static List<string>? ParseOptions(ChatToolCall toolCall)
+    {
+        try
+        {
+            var root = JsonDocument.Parse(toolCall.FunctionArguments.ToString()).RootElement;
+            if (root.TryGetProperty("options", out var array) && array.ValueKind == JsonValueKind.Array)
+            {
+                var list = array.EnumerateArray()
+                    .Where(x => x.ValueKind == JsonValueKind.String)
+                    .Select(x => x.GetString()!)
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToList();
+                return list.Count > 0 ? list : null;
+            }
+        }
+        catch (JsonException)
+        {
+            // Ignore malformed arguments — just show no quick-replies.
+        }
+
+        return null;
     }
 
     private static string? GetString(JsonElement root, string name)
@@ -261,6 +297,23 @@ public sealed class AiChatService : IAiChatService
                 "highBpm": { "type": "number", "description": "Optional maximum beats per minute." }
               },
               "required": ["query"]
+            }
+            """));
+
+    private static readonly ChatTool PresentOptionsTool = ChatTool.CreateFunctionTool(
+        "present_options",
+        "Show the dancer tappable quick-reply buttons so they don't have to type. Call this whenever your message asks them to choose — track shortlists, or confirmations. Provide 2 to 5 short options.",
+        BinaryData.FromString("""
+            {
+              "type": "object",
+              "properties": {
+                "options": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "2-5 short button labels, each a natural reply the dancer might tap, e.g. 'Light Up - Kylie Minogue', 'Yes, request it' or 'Show me others'."
+                }
+              },
+              "required": ["options"]
             }
             """));
 

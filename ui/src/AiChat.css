@@ -39,6 +39,12 @@
     border-bottom-left-radius: 0.25rem;
 }
 
+.ai-chat-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 .ai-chat-input {
     display: flex;
     gap: 0.5rem;
