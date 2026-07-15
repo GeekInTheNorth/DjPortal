@@ -3,8 +3,8 @@ using Azure;
 using Azure.AI.OpenAI;
 using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Requests;
-using DjPortalApi.Features.Spotify;
 using DjPortalApi.Features.Tracks;
+using DjPortalApi.Features.WebSearch;
 using Microsoft.Extensions.Configuration;
 using OpenAI.Chat;
 
@@ -18,19 +18,19 @@ public sealed class AiChatService : IAiChatService
 
     private readonly ChatClient? _chatClient;
     private readonly ITrackRepository _trackRepository;
-    private readonly ISpotifyService _spotifyService;
+    private readonly IWebSearchService _webSearchService;
     private readonly IRequestService _requestService;
     private readonly IRequestRepository _requestRepository;
 
     public AiChatService(
         IConfiguration configuration,
         ITrackRepository trackRepository,
-        ISpotifyService spotifyService,
+        IWebSearchService webSearchService,
         IRequestService requestService,
         IRequestRepository requestRepository)
     {
         _trackRepository = trackRepository;
-        _spotifyService = spotifyService;
+        _webSearchService = webSearchService;
         _requestService = requestService;
         _requestRepository = requestRepository;
 
@@ -79,7 +79,7 @@ public sealed class AiChatService : IAiChatService
 
         var options = new ChatCompletionOptions
         {
-            Tools = { SearchTracksTool, SearchSpotifyTool, SubmitRequestTool }
+            Tools = { SearchTracksTool, WebSearchTool, SubmitRequestTool }
         };
 
         var requestSubmitted = false;
@@ -141,16 +141,11 @@ public sealed class AiChatService : IAiChatService
                 return (JsonSerializer.Serialize(new { results }), false);
             }
 
-            case "search_spotify":
+            case "web_search":
             {
                 var query = GetString(root, "query") ?? string.Empty;
-                var tracks = await _spotifyService.SearchTracks(query);
-                var results = tracks.Select(t => new
-                {
-                    title = t.Name,
-                    artist = string.Join(", ", t.Artists?.Select(a => a.Name) ?? Enumerable.Empty<string?>()),
-                    url = t.ExternalUrl
-                });
+                var hits = await _webSearchService.Search(query, 5);
+                var results = hits.Select(r => new { title = r.Title, url = r.Url, snippet = r.Content });
                 return (JsonSerializer.Serialize(new { results }), false);
             }
 
@@ -217,11 +212,11 @@ public sealed class AiChatService : IAiChatService
             - When the dancer is vague (e.g. "some swing", "something upbeat", "a smoochy one"), use your own
               music knowledge to brainstorm several SPECIFIC artists and songs that fit the vibe AND suit modern
               jive dancing (think what a good ceroc DJ would play for that request).
-            - Then cross-reference those candidates against the tools: call search_tracks (DJ Mark's own library)
-              and search_spotify to see which actually exist. Prefer tracks found in Mark's library, but you may
-              also suggest well-known real tracks you found on Spotify or know from your own knowledge.
+            - Call search_tracks first to check DJ Mark's own library and prefer tracks it returns.
+            - Use web_search when you need to confirm a track really exists, or to find current/recent releases and
+              chart hits that may be beyond your own knowledge (e.g. an artist's latest single). Cross-reference what
+              you find, then suggest real tracks.
             - Offer a short shortlist of concrete options by name rather than asking the dancer to be more specific.
-            - When submitting a Spotify result, pass its url as spotifyUrl.
 
             The requester's name:
             {nameGuidance}
@@ -269,14 +264,14 @@ public sealed class AiChatService : IAiChatService
             }
             """));
 
-    private static readonly ChatTool SearchSpotifyTool = ChatTool.CreateFunctionTool(
-        "search_spotify",
-        "Search Spotify for tracks not found in DJ Mark's library. Returns title, artist and a spotify url. Use only as a fallback.",
+    private static readonly ChatTool WebSearchTool = ChatTool.CreateFunctionTool(
+        "web_search",
+        "Search the web to confirm a real track exists or to find current/recent releases and chart hits. Returns title, url and snippet.",
         BinaryData.FromString("""
             {
               "type": "object",
               "properties": {
-                "query": { "type": "string", "description": "Artist, song name or keywords to search for." }
+                "query": { "type": "string", "description": "A concise search phrase, e.g. 'Kylie Minogue latest single' or 'best modern jive swing tracks'." }
               },
               "required": ["query"]
             }
@@ -293,7 +288,7 @@ public sealed class AiChatService : IAiChatService
                 "requestedBy": { "type": "string", "description": "The dancer's name if known; omit if they haven't given one." },
                 "bpm": { "type": "number", "description": "Optional beats per minute from a library result." },
                 "time": { "type": "string", "description": "Optional timing/length from a library result." },
-                "spotifyUrl": { "type": "string", "description": "The spotify track url, when the track came from search_spotify." }
+                "spotifyUrl": { "type": "string", "description": "A spotify track url ONLY if the dancer pasted one; otherwise omit." }
               },
               "required": ["trackName"]
             }

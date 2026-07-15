@@ -6,6 +6,7 @@ using DjPortalApi.Features.Insights;
 using DjPortalApi.Features.Requests;
 using DjPortalApi.Features.Spotify;
 using DjPortalApi.Features.Tracks;
+using DjPortalApi.Features.WebSearch;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,7 @@ builder.Services
     .AddScoped<IRequestService, RequestService>()
     .AddScoped<ISpotifyService, SpotifyService>()
     .AddScoped<ITrackRepository, TrackRepository>()
+    .AddScoped<IWebSearchService, WebSearchService>()
     .AddScoped<IAiChatService, AiChatService>();
 
 builder.Build().Run();
