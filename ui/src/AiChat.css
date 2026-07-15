@@ -39,6 +39,16 @@
     border-bottom-left-radius: 0.25rem;
 }
 
+.ai-chat-bubble-success {
+    background-color: #d1e7dd;
+    color: #0a3622;
+    border: 1px solid #a3cfbb;
+}
+
+.ai-chat-check {
+    font-weight: 700;
+}
+
 .ai-chat-options {
     display: flex;
     flex-wrap: wrap;

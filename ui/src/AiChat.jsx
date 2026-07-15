@@ -36,10 +36,11 @@ function AiChat() {
                 messages: nextMessages
             });
             const reply = response?.data?.reply || "Sorry, I didn't catch that. Could you try rephrasing?";
-            setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+            const submitted = !!response?.data?.requestSubmitted;
+            setMessages((prev) => [...prev, { role: 'assistant', content: reply, submitted }]);
             setOptions(Array.isArray(response?.data?.options) ? response.data.options : []);
 
-            if (response?.data?.requestSubmitted) {
+            if (submitted) {
                 getMusicRequests(selectedEvent);
             }
         } catch {
@@ -59,7 +60,8 @@ function AiChat() {
             <div className='ai-chat-messages'>
                 {messages.map((message, index) => (
                     <div key={index} className={`ai-chat-row ai-chat-row-${message.role}`}>
-                        <div className={`ai-chat-bubble ai-chat-bubble-${message.role}`}>
+                        <div className={`ai-chat-bubble ai-chat-bubble-${message.role}${message.submitted ? ' ai-chat-bubble-success' : ''}`}>
+                            {message.submitted && <span className='ai-chat-check' aria-hidden='true'>✓ </span>}
                             {message.content}
                         </div>
                     </div>

@@ -61,9 +61,8 @@ public sealed class AiChatService : IAiChatService
         }
 
         var knownName = await _requestRepository.GetUserName(userId);
-        var userMessageCount = history.Count(m => !string.Equals(m.Role, "assistant", StringComparison.OrdinalIgnoreCase));
 
-        var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails, knownName, userMessageCount)) };
+        var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails, knownName)) };
         foreach (var message in history)
         {
             var content = message.Content ?? string.Empty;
@@ -200,17 +199,17 @@ public sealed class AiChatService : IAiChatService
         }
     }
 
-    private static string BuildSystemPrompt(EventDetails eventDetails, string? knownName, int userMessageCount)
+    private static string BuildSystemPrompt(EventDetails eventDetails, string? knownName)
     {
         var nameGuidance = string.IsNullOrWhiteSpace(knownName)
             ? $"""
-              - You do not yet know the dancer's name. Ask for it once, casually. If they give it, use it.
-              - Do NOT keep pestering for a name. They have sent {userMessageCount} message(s) so far — if you
-                reach roughly 3-4 messages without a name, assume they won't give one and just use '{DefaultRequestorName}'.
+              - You do not know the dancer's name, but NEVER interrupt the flow to ask for it. When confirming a
+                track, include 'Add my name' as one of the tappable options. Only if they tap it should you ask
+                them to type a name. If they confirm without giving one, submit using '{DefaultRequestorName}'.
               """
             : $"""
-              - The dancer is known as '{knownName}' from their previous requests. Use this name and do NOT ask
-                for it — only change it if they explicitly give a different name.
+              - The dancer is known as '{knownName}' from their previous requests. Use this name silently and NEVER
+                ask for it — only change it if they explicitly give a different name.
               """;
 
         return $"""
@@ -235,7 +234,12 @@ public sealed class AiChatService : IAiChatService
             {nameGuidance}
 
             Submitting:
-            - Confirm the chosen track with the user in a message before calling submit_request.
+            - When the dancer picks a track, briefly acknowledge THAT specific track by name and move forward.
+              NEVER re-list the earlier shortlist or repeat your previous message — that looks like a failure.
+            - Confirm with tappable options via present_options (e.g. 'Yes, request it', 'Add my name',
+              'Show me others'), then call submit_request as soon as they confirm.
+            - After submit_request succeeds, reply with a short confirmation like "Done — I've sent your request to
+              DJ Mark!" and do NOT show any options.
             - When a submission fails, relay the returned error message to the user word for word.
 
             Keep replies short and warm. Suggest real songs and artists — never make up song titles that do not exist.
