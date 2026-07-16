@@ -16,9 +16,15 @@ public sealed class AiChatMessageModel
 
 public sealed class AiChatResponse
 {
+    private List<string>? _options;
+
     public string Reply { get; set; } = string.Empty;
 
     public bool RequestSubmitted { get; set; }
 
-    public List<string>? Options { get; set; }
+    public List<string>? Options
+    {
+        get => RequestSubmitted ? [] : _options;
+        set => _options = value;
+    }
 }

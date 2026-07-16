@@ -12,9 +12,12 @@ namespace DjPortalApi.Features.AiChat;
 
 public sealed class AiChatService : IAiChatService
 {
-    private const int MaxToolIterations = 5;
+    private const int MaxToolIterations = 10;
 
-    private const string DefaultRequestorName = "From the Floor";
+    // Only the most recent chat entries are sent to the model to cap token growth.
+    private const int MaxHistoryMessages = 20;
+
+    private const string DefaultRequestorName = "Mysterious Dancer";
 
     private readonly ChatClient? _chatClient;
     private readonly ITrackRepository _trackRepository;
@@ -63,7 +66,7 @@ public sealed class AiChatService : IAiChatService
         var knownName = await _requestRepository.GetUserName(userId);
 
         var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails, knownName)) };
-        foreach (var message in history)
+        foreach (var message in history.TakeLast(MaxHistoryMessages))
         {
             var content = message.Content ?? string.Empty;
             if (string.Equals(message.Role, "assistant", StringComparison.OrdinalIgnoreCase))
@@ -115,7 +118,7 @@ public sealed class AiChatService : IAiChatService
 
         return new AiChatResponse
         {
-            Reply = "Sorry, I couldn't finish that. Please try again, or use the standard request form below.",
+            Reply = requestSubmitted ? "Your request has been submitted to DJ Mark." : "Sorry, I couldn't finish that. Please try again, or use the standard request form below.",
             RequestSubmitted = requestSubmitted,
             Options = quickReplies
         };
