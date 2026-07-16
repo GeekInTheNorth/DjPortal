@@ -85,7 +85,7 @@ public sealed class AiChatService : IAiChatService
         };
 
         var requestSubmitted = false;
-        List<string>? quickReplies = null;
+        List<AiChatOption>? quickReplies = null;
 
         for (var iteration = 0; iteration < MaxToolIterations; iteration++)
         {
@@ -229,18 +229,23 @@ public sealed class AiChatService : IAiChatService
               chart hits that may be beyond your own knowledge (e.g. an artist's latest single). Cross-reference what
               you find, then suggest real tracks.
             - Offer a short shortlist of concrete options by name rather than asking the dancer to be more specific.
-            - Whenever your message asks the dancer to choose, call present_options so they can TAP their answer
-              instead of typing: offer each suggested track as an option, and for confirmations offer choices like
-              'Yes, request it' and 'Show me others'. The option labels must be exactly what they'd reply.
+            - Always call present_options so the dancer can TAP instead of typing. Each option has a 'label' (shown on
+              the button) and a 'value' (the message sent when tapped):
+              * For any track the dancer can pick, set label to "Title - Artist" and value to "Request Title - Artist".
+                Tapping it therefore asks you to request that exact track — act on it.
+              * For other choices (e.g. 'Show me others', 'Add my name') set label and value to the same text.
 
             The requester's name:
             {nameGuidance}
 
             Submitting:
-            - When the dancer picks a track, briefly acknowledge THAT specific track by name and move forward.
-              NEVER re-list the earlier shortlist or repeat your previous message — that looks like a failure.
-            - Confirm with tappable options via present_options (e.g. 'Yes, request it', 'Add my name',
-              'Show me others'), then call submit_request as soon as they confirm.
+            - A specific track identifies the dancer's decision. The MOMENT the dancer names a track, sends a message
+              like "Request Title - Artist", or taps an affirmative like 'Yes, request it', call submit_request
+              immediately for that track.
+            - NEVER ask the dancer to confirm the same track twice, and never re-list the shortlist or repeat your
+              previous message — that reads as a failure. If you have already suggested a single track and asked
+              "shall I request it?", the dancer's next reply naming or accepting it IS the confirmation — submit it.
+            - The name must never block this: submit using the known name or the default silently.
             - After submit_request succeeds, reply with a short confirmation like "Done — I've sent your request to
               DJ Mark!" and do NOT show any options.
             - When a submission fails, relay the returned error message to the user word for word.
@@ -249,18 +254,30 @@ public sealed class AiChatService : IAiChatService
             """;
     }
 
-    private static List<string>? ParseOptions(ChatToolCall toolCall)
+    private static List<AiChatOption>? ParseOptions(ChatToolCall toolCall)
     {
         try
         {
             var root = JsonDocument.Parse(toolCall.FunctionArguments.ToString()).RootElement;
             if (root.TryGetProperty("options", out var array) && array.ValueKind == JsonValueKind.Array)
             {
-                var list = array.EnumerateArray()
-                    .Where(x => x.ValueKind == JsonValueKind.String)
-                    .Select(x => x.GetString()!)
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .ToList();
+                var list = new List<AiChatOption>();
+                foreach (var item in array.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    // Fall back gracefully if the model only supplied one of the two fields.
+                    var label = GetString(item, "label") ?? GetString(item, "value");
+                    var value = GetString(item, "value") ?? GetString(item, "label");
+                    if (!string.IsNullOrWhiteSpace(label) && !string.IsNullOrWhiteSpace(value))
+                    {
+                        list.Add(new AiChatOption { Label = label, Value = value });
+                    }
+                }
+
                 return list.Count > 0 ? list : null;
             }
         }
@@ -309,15 +326,22 @@ public sealed class AiChatService : IAiChatService
 
     private static readonly ChatTool PresentOptionsTool = ChatTool.CreateFunctionTool(
         "present_options",
-        "Show the dancer tappable quick-reply buttons so they don't have to type. Call this whenever your message asks them to choose — track shortlists, or confirmations. Provide 2 to 5 short options.",
+        "Show the dancer tappable quick-reply buttons so they don't have to type. Call this whenever your message asks them to choose — track shortlists, or confirmations. Provide 2 to 5 options.",
         BinaryData.FromString("""
             {
               "type": "object",
               "properties": {
                 "options": {
                   "type": "array",
-                  "items": { "type": "string" },
-                  "description": "2-5 short button labels, each a natural reply the dancer might tap, e.g. 'Light Up - Kylie Minogue', 'Yes, request it' or 'Show me others'."
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": { "type": "string", "description": "Short text shown on the button, e.g. 'Light Up - Kylie Minogue' or 'Show me others'." },
+                      "value": { "type": "string", "description": "The message sent when tapped. For a track the dancer can pick, use an explicit instruction: 'Request Title - Artist'. For other choices use the same text as the label." }
+                    },
+                    "required": ["label", "value"]
+                  },
+                  "description": "2-5 options the dancer can tap."
                 }
               },
               "required": ["options"]

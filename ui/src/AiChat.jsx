@@ -79,8 +79,8 @@ function AiChat() {
             {options.length > 0 && !isSending && (
                 <div className='ai-chat-options mt-3'>
                     {options.map((option, index) => (
-                        <Button key={index} variant='outline-primary' size='sm' onClick={() => sendMessage(option)}>
-                            {option}
+                        <Button key={index} variant='outline-primary' size='sm' onClick={() => sendMessage(option.value)}>
+                            {option.label}
                         </Button>
                     ))}
                 </div>
