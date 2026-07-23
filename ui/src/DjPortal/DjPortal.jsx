@@ -29,7 +29,10 @@ function DjPortal() {
                     {requestData.trackName}
                     {isSpotifyUrl ? (<a href={requestData.spotifyUrl} className='spotify-link' target="_blank" rel="noopener noreferrer">Open in Spotify</a>) : ''}
                 </td>
-                <td>{requestData.userName}</td>
+                <td>
+                    {requestData.userName}
+                    {requestData.userId && <div className='text-muted small'>{requestData.userId.substring(0, 8)}</div>}
+                </td>
                 <td>{requestData.timing}</td>
                 <td>{requestData.status}</td>
                 <td>
@@ -150,6 +153,7 @@ DjPortal.propTypes = {
     }),
     requestData: PropTypes.shape({
         id: PropTypes.string,
+        userId: PropTypes.string,
         userName: PropTypes.string,
         trackName: PropTypes.string,
         status: PropTypes.string,
