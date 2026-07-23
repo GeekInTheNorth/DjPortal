@@ -6,11 +6,14 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import SearchTermInsights from './SearchTermInsights.jsx';
 import DjRequestForm from './DjRequestForm.jsx';
+import EditRequestModal from './EditRequestModal.jsx';
 
 function DjPortal() {
 
     const { eventCollection, selectedEvent, requestCollection, selectEvent, getMusicRequests } = useContext(AppContext);
     const [allowDelete, setAllowDelete] = useState(false);
+    const [allowEdits, setAllowEdits] = useState(false);
+    const [editRequest, setEditRequest] = useState(null);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -40,6 +43,7 @@ function DjPortal() {
                     {requestData.status === 'Approved' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Queued')}>Queue</button>}
                     {requestData.status === 'Queued' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Played')}>Played</button>}
                     {requestData.status !== 'Pending' && <button className='btn btn-danger mx-3' onClick={() => handleRequestStateChange(requestData.id, 'Pending')}>Reset</button>}
+                    {allowEdits && <button className='btn btn-secondary mx-3' onClick={() => setEditRequest(requestData)}>Edit</button>}
                     {allowDelete && <button className='btn btn-danger mx-3' onClick={() => handleDeleteRequest(requestData.id)}>Delete</button>}
                 </td>
             </tr>
@@ -110,11 +114,17 @@ function DjPortal() {
                     </Form.Select>
                 </Form.Group>
                 <div className='my-3'>
-                    <Form.Check 
+                    <Form.Check
                         type='checkbox'
                         label='Allow Deleting Requests'
                         checked={allowDelete}
                         onChange={(e) => setAllowDelete(e.target.checked)}
+                    />
+                    <Form.Check
+                        type='checkbox'
+                        label='Allow Edits'
+                        checked={allowEdits}
+                        onChange={(e) => setAllowEdits(e.target.checked)}
                     />
                 </div>
                 <table className='table table-striped'>
@@ -133,6 +143,12 @@ function DjPortal() {
                 </table>
             </Card.Body>
         </Card>
+        <EditRequestModal
+            show={editRequest !== null}
+            requestData={editRequest}
+            onHide={() => setEditRequest(null)}
+            onSaved={() => getMusicRequests(selectedEvent)}
+        />
         <DjRequestForm/>
         <SearchTermInsights />
         </>
