@@ -12,6 +12,8 @@ public interface IRequestRepository
 
     Task UpdateStatus(Guid requestId, RequestStatus status);
 
+    Task UpdateTrack(Guid requestId, string trackName, decimal bpm, string? time);
+
     Task<int> GetCountByUserAndEvent(Guid eventId, Guid userId);
 
     Task<string?> GetUserName(Guid userId);

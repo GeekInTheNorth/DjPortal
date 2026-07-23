@@ -198,6 +198,40 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         }
     }
 
+    public async Task UpdateTrack(Guid requestId, string trackName, decimal bpm, string? time)
+    {
+        if (!TryCreateSearchClient(AppConstants.RequestsIndexName, out var searchClient))
+        {
+            return;
+        }
+
+        var musicRequest = await searchClient.GetDocumentAsync<MusicRequest>(requestId.ToString());
+        var musicResquest = musicRequest?.Value;
+        if (musicResquest == null)
+        {
+            return;
+        }
+
+        musicResquest.TrackName = trackName;
+        musicResquest.BPM = bpm;
+        musicResquest.Time = time;
+
+        await searchClient.UploadDocumentsAsync([
+            new {
+                musicResquest.Id,
+                musicResquest.EventId,
+                musicResquest.UserId,
+                musicResquest.UserName,
+                musicResquest.TrackName,
+                musicResquest.SpotifyUrl,
+                musicResquest.BPM,
+                musicResquest.Time,
+                musicResquest.IsFinalized,
+                musicResquest.Status
+            }
+        ]);
+    }
+
     public async Task DeleteAndCreateRequestIndex()
     {
         if (!TryCreateSearchIndexClient(out var searchIndexClient))

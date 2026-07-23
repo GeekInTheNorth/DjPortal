@@ -76,6 +76,24 @@ public class MusicRequestFunction(
         return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK);
     }
 
+    [Function("UpdateRequestTrack")]
+    public async Task<HttpResponseData> UpdateRequestTrack([HttpTrigger(AuthorizationLevel.Function, "post", Route = "musicrequest/updatetrack")] HttpRequestData req)
+    {
+        // Check if user is authenticated
+        var authResponse = RequireAuthentication(req, out var _);
+        if (authResponse != null) return authResponse;
+
+        var model = await GetModelAsync<MusicRequestTrackUpdateModel>(req);
+        if (!Guid.TryParse(model?.RequestId, out var requestId) || string.IsNullOrWhiteSpace(model?.TrackName))
+        {
+            return CreateEmptyResponse(req, System.Net.HttpStatusCode.BadRequest);
+        }
+
+        await requestRepository.UpdateTrack(requestId, model.TrackName, model.SafeBpm, model.Time);
+
+        return CreateEmptyResponse(req, System.Net.HttpStatusCode.OK);
+    }
+
     [Function("DeleteRequest")]
     public async Task<HttpResponseData> DeleteRequest([HttpTrigger(AuthorizationLevel.Function, "delete", Route = "musicrequest/delete")] HttpRequestData req)
     {
