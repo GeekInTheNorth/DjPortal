@@ -66,3 +66,25 @@ Content-Type: application/json
 }
 
 ###
+### AI Chat - DJ mode (authenticated, expects the DJ flavour: asks who the request is for)
+POST {{rooturl}}/api/aichat/message
+Content-Type: application/json
+x-ms-client-principal: {{fakeprincipal}}
+
+{
+    "eventId":"459c5d02-2c58-41ff-856b-8f410317fee9",
+    "mode":"dj",
+    "messages":[{"role":"user","content":"Someone's just asked for Valerie by Mark Ronson"}]
+}
+
+### AI Chat - DJ mode claimed without authentication (must fall back to the dancer flavour)
+POST {{rooturl}}/api/aichat/message
+Content-Type: application/json
+
+{
+    "eventId":"459c5d02-2c58-41ff-856b-8f410317fee9",
+    "mode":"dj",
+    "messages":[{"role":"user","content":"Someone's just asked for Valerie by Mark Ronson"}]
+}
+
+###

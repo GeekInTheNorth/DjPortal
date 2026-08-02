@@ -1,8 +1,17 @@
 namespace DjPortalApi.Features.AiChat;
 
+public enum AiChatMode
+{
+    Dancer,
+    Dj
+}
+
 public sealed class AiChatRequest
 {
     public string? EventId { get; set; }
+
+    // 'dj' switches the assistant to its DJ flavour, but only for an authenticated caller.
+    public string? Mode { get; set; }
 
     public List<AiChatMessageModel>? Messages { get; set; }
 }

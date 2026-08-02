@@ -20,6 +20,9 @@ public sealed class AiChatService : IAiChatService
 
     private const string DefaultRequestorName = "Mysterious Dancer";
 
+    // The DJ logs requests on other people's behalf, so his own name is only the last resort.
+    private const string DefaultDjRequestorName = "DJ Mark";
+
     private readonly ChatClient? _chatClient;
     private readonly ITrackRepository _trackRepository;
     private readonly IWebSearchService _webSearchService;
@@ -53,7 +56,7 @@ public sealed class AiChatService : IAiChatService
         }
     }
 
-    public async Task<AiChatResponse> SendAsync(EventDetails eventDetails, Guid userId, bool isAuthenticated, IList<AiChatMessageModel> history)
+    public async Task<AiChatResponse> SendAsync(EventDetails eventDetails, Guid userId, bool isAuthenticated, IList<AiChatMessageModel> history, AiChatMode mode)
     {
         if (_chatClient is null)
         {
@@ -64,9 +67,11 @@ public sealed class AiChatService : IAiChatService
             };
         }
 
-        var knownName = await _requestRepository.GetUserName(userId);
+        // In DJ mode the cookie belongs to the DJ's browser, and his submissions are given a fresh
+        // user id anyway, so any name held against it would be the wrong dancer.
+        var knownName = mode == AiChatMode.Dj ? null : await _requestRepository.GetUserName(userId);
 
-        var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails, knownName)) };
+        var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails, knownName, mode)) };
         foreach (var message in history.TakeLast(MaxHistoryMessages))
         {
             var content = message.Content ?? string.Empty;
@@ -205,7 +210,71 @@ public sealed class AiChatService : IAiChatService
         }
     }
 
-    private static string BuildSystemPrompt(EventDetails eventDetails, string? knownName)
+    private static string BuildSystemPrompt(EventDetails eventDetails, string? knownName, AiChatMode mode)
+        => mode == AiChatMode.Dj
+            ? BuildDjPrompt(eventDetails)
+            : BuildDancerPrompt(eventDetails, knownName);
+
+    // Mechanical rules that apply to both flavours of the assistant.
+    private const string OptionsGuidance = """
+        - Whenever your message asks them to choose, call present_options so they can TAP their answer
+          instead of typing: offer each suggested track as an option, and for confirmations offer choices
+          like 'Yes, request it' and 'Show me others'. The option labels must be exactly what they'd reply.
+        - When using the present_options tool, the options appear as buttons, so your message must NEVER
+          restate them. Do not list the tracks, number them, or spell out the choices in your text — write
+          only a brief lead-in such as "Here are a few that would work a treat:" or "Want me to send that
+          one over?" and let the buttons speak for themselves.
+        """;
+
+    private const string FormattingGuidance = """
+        Formatting:
+        - The chat window shows your reply as plain text and does NOT render Markdown. Never use **bold**,
+          *italics*, `backticks`, headings or bullet markers — they appear as raw punctuation. Write in
+          plain sentences.
+        """;
+
+    private static string BuildDjPrompt(EventDetails eventDetails)
+    {
+        return $"""
+            You are DJ Mark's music assistant, and you are talking to Mark himself in his DJ portal for the
+            event "{eventDetails.Name}". This is a modern jive / ceroc dance event, so tracks must be
+            danceable at a partner-dance tempo. He is either building his set or logging a request a dancer
+            has just made in person, so be quick and practical — he is working.
+
+            Finding music:
+            - Call search_tracks first to check his own library and prefer tracks it returns.
+            - Use web_search when you need to confirm a track really exists, or to find current/recent
+              releases and chart hits that may be beyond your own knowledge. Cross-reference what you find.
+            - When he is vague (e.g. "something to lift the floor", "a smoochy one to slow it down"), use your
+              own music knowledge to brainstorm several SPECIFIC artists and songs that fit AND suit modern
+              jive dancing.
+            - Offer a short shortlist of concrete options by name rather than asking him to be more specific.
+            - He may just be after ideas for the set. Never push him towards submitting — only submit when he
+              asks you to.
+            {OptionsGuidance}
+
+            Who the request is for:
+            - Requests are logged against a dancer's name. Once he settles on a track, ask who it is for and
+              pass that as requestedBy — offer 'It's for me' as one of the tappable options.
+            - NEVER offer 'Add my name'; that is for dancers on the public page.
+            - If he confirms without naming anyone, submit using '{DefaultDjRequestorName}'.
+
+            Submitting:
+            - When he picks a track, briefly acknowledge THAT specific track by name and move forward.
+              NEVER re-list the earlier shortlist or repeat your previous message — that looks like a failure.
+            - Confirm with tappable options via present_options, then call submit_request as soon as he confirms.
+            - His requests are approved automatically, so after submit_request succeeds reply with a short
+              confirmation like "Added and approved — it's in the list." and do NOT show any options.
+            - When a submission fails, relay the returned error message word for word.
+
+            Keep replies short and to the point. Suggest real songs and artists — never make up song titles
+            that do not exist.
+
+            {FormattingGuidance}
+            """;
+    }
+
+    private static string BuildDancerPrompt(EventDetails eventDetails, string? knownName)
     {
         var nameGuidance = string.IsNullOrWhiteSpace(knownName)
             ? $"""
@@ -233,13 +302,7 @@ public sealed class AiChatService : IAiChatService
               chart hits that may be beyond your own knowledge (e.g. an artist's latest single). Cross-reference what
               you find, then suggest real tracks.
             - Offer a short shortlist of concrete options by name rather than asking the dancer to be more specific.
-            - Whenever your message asks the dancer to choose, call present_options so they can TAP their answer
-              instead of typing: offer each suggested track as an option, and for confirmations offer choices like
-              'Yes, request it' and 'Show me others'. The option labels must be exactly what they'd reply.
-            - When using the present_options tool, the options appear to the dancer as buttons, so your message must NEVER restate them. Do not list the
-              tracks, number them, or spell out the choices in your text — write only a brief lead-in such as
-              "Here are a few that would work a treat:" or "Want me to send that one over?" and let the buttons
-              speak for themselves.
+            {OptionsGuidance}
 
             The requester's name:
             {nameGuidance}
@@ -255,10 +318,7 @@ public sealed class AiChatService : IAiChatService
 
             Keep replies short and warm. Suggest real songs and artists — never make up song titles that do not exist.
 
-            Formatting:
-            - The chat window shows your reply as plain text and does NOT render Markdown. Never use **bold**,
-              *italics*, `backticks`, headings or bullet markers — they appear to the dancer as raw punctuation.
-              Write in plain sentences.
+            {FormattingGuidance}
             """;
     }
 

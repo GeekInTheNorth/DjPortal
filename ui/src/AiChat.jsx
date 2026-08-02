@@ -2,15 +2,18 @@ import { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from './AppContext.jsx';
 import { Form, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 import './AiChat.css';
 
-const GREETING = "Hi! I'm DJ Mark's assistant. Tell me what you fancy hearing — an artist, a song, or just a vibe — and I'll help you request it.";
+const DANCER_GREETING = "Hi! I'm DJ Mark's assistant. Tell me what you fancy hearing — an artist, a song, or just a vibe — and I'll help you request it.";
 
-function AiChat() {
+const DANCER_OPTIONS = ["I want a specific song", "I want anything by a specific artist", "I want a specific genre or decade", "I don't know the name, but the lyrics go..."];
+
+function AiChat({ greeting = DANCER_GREETING, initialOptions = DANCER_OPTIONS, mode = 'dancer' }) {
     const { selectedEvent, getMusicRequests } = useContext(AppContext);
-    const [messages, setMessages] = useState([{ role: 'assistant', content: GREETING }]);
+    const [messages, setMessages] = useState([{ role: 'assistant', content: greeting }]);
     const [input, setInput] = useState('');
-    const [options, setOptions] = useState(["I want a specific song", "I want anything by a specific artist", "I want a specific genre or decade", "I don't know the name, but the lyrics go..."]);
+    const [options, setOptions] = useState(initialOptions);
     const [isSending, setIsSending] = useState(false);
     const messagesEndRef = useRef(null);
 
@@ -33,6 +36,7 @@ function AiChat() {
         try {
             const response = await axios.post(import.meta.env.VITE_APP_AI_CHAT, {
                 eventId: selectedEvent.id,
+                mode: mode,
                 messages: nextMessages
             });
             const reply = response?.data?.reply || "Sorry, I didn't catch that. Could you try rephrasing?";
@@ -99,5 +103,11 @@ function AiChat() {
         </>
     );
 }
+
+AiChat.propTypes = {
+    greeting: PropTypes.string,
+    initialOptions: PropTypes.arrayOf(PropTypes.string),
+    mode: PropTypes.oneOf(['dancer', 'dj'])
+};
 
 export default AiChat;

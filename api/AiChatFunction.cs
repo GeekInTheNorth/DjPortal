@@ -27,7 +27,7 @@ public class AiChatFunction(
         }
 
         var eventDetails = await eventService.Get(eventId);
-        if (eventDetails is null || !eventDetails.IsRequestable)
+        if (eventDetails is null)
         {
             return CreateEmptyResponse(req, HttpStatusCode.BadRequest);
         }
@@ -36,7 +36,18 @@ public class AiChatFunction(
         var user = GetAuthenticatedUser(req);
         var isAuthenticated = user is { IsAuthenticated: true };
 
-        var response = await aiChatService.SendAsync(eventDetails, userId, isAuthenticated, model.Messages);
+        // DJ mode is only ever honoured for an authenticated caller, so it cannot be spoofed from the public page.
+        var mode = isAuthenticated && string.Equals(model.Mode, "dj", StringComparison.OrdinalIgnoreCase)
+            ? AiChatMode.Dj
+            : AiChatMode.Dancer;
+
+        // The DJ can add tracks to any event via the portal form, so only dancers are held to IsRequestable.
+        if (mode == AiChatMode.Dancer && !eventDetails.IsRequestable)
+        {
+            return CreateEmptyResponse(req, HttpStatusCode.BadRequest);
+        }
+
+        var response = await aiChatService.SendAsync(eventDetails, userId, isAuthenticated, model.Messages, mode);
 
         return await CreateResponseAsync(req, HttpStatusCode.OK, response, !existingUserCookie, userId);
     }

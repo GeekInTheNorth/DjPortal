@@ -1,12 +1,16 @@
 import { useContext, useEffect, useState } from 'react'
 import { AppContext } from './../AppContext.jsx';
-import { Card, Form } from 'react-bootstrap'
+import { Card, Form, Tabs, Tab } from 'react-bootstrap'
 import { format } from 'date-fns';
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import SearchTermInsights from './SearchTermInsights.jsx';
 import DjRequestForm from './DjRequestForm.jsx';
 import EditRequestModal from './EditRequestModal.jsx';
+import AiChat from './../AiChat.jsx';
+
+const DJ_GREETING = "Evening DJ Mark. Tell me what you need — a track someone's just asked for, or something to fill a gap in the set — and I'll dig it out.";
+
+const DJ_OPTIONS = ["Suggest something to play next", "Find me a floor-filler around 130 BPM", "What's in the library by..."];
 
 function DjPortal() {
 
@@ -149,8 +153,18 @@ function DjPortal() {
             onHide={() => setEditRequest(null)}
             onSaved={() => getMusicRequests(selectedEvent)}
         />
-        <DjRequestForm/>
-        <SearchTermInsights />
+        <Tabs defaultActiveKey='form' className='mt-3 request-tabs' fill>
+            <Tab eventKey='form' title='Request a Track'>
+                <div className='border border-top-0 rounded-bottom p-3 bg-white'>
+                    <DjRequestForm />
+                </div>
+            </Tab>
+            <Tab eventKey='ai' title='Ask DJ Assistant'>
+                <div className='border border-top-0 rounded-bottom p-3 bg-white'>
+                    <AiChat mode='dj' greeting={DJ_GREETING} initialOptions={DJ_OPTIONS} />
+                </div>
+            </Tab>
+        </Tabs>
         </>
     )
 }

@@ -5,7 +5,6 @@ import { EventPageProvider } from './EventPageContext.jsx';
 import RequestForm from './RequestForm.jsx';
 import AiChat from './AiChat.jsx';
 import RequestList from './RequestList.jsx';
-import './EventPageApp.css';
 
 function EventPageContent() {
     const { selectedEvent } = useContext(AppContext);

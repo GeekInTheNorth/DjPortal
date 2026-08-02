@@ -1,6 +1,6 @@
 import { useContext, useState, useCallback } from 'react'
 import { AppContext } from './../AppContext.jsx';
-import { Form, Card, FormGroup, Button } from 'react-bootstrap';
+import { Form, FormGroup, Button } from 'react-bootstrap';
 import axios from 'axios';
 
 function DjRequestForm() {
@@ -106,25 +106,20 @@ function DjRequestForm() {
         )};
 
     return(
-        <Card className='my-3'>
-            <Card.Header>Request a Track</Card.Header>
-            <Card.Body>
-                <Form>
-                    <FormGroup className='mb-3' controlId='formRequestor'>
-                        <Form.Label className='fw-bold d-block'>Dancer</Form.Label>
-                        <Form.Control type='text' placeholder='Your Name' value={requestorName} onChange={handleRequestorNameChange} required={true} />
-                    </FormGroup>
-                    <FormGroup className='mb-3' controlId='formMusicRequest'>
-                        <Form.Label className='fw-bold d-block'>Track Request</Form.Label>
-                        <Form.Control type='text' placeholder='Enter a track name and artist here' value={trackName} onChange={handleTrackNameChange} onKeyDown={handleTrackNameKeyPress} onKeyUp={handleTrackNameKeyUp} required={true} />
-                        { showSuggestions ? <ul className='list-group my-3'>{renderTrackSuggestions()}</ul> : null }
-                    </FormGroup>
-                    <Form.Group className='my-3'>
-                        <Button type='submit' onClick={handleSubmitRequest}>Submit</Button>
-                    </Form.Group>
-                </Form>
-            </Card.Body>
-        </Card>
+        <Form>
+            <FormGroup className='mb-3' controlId='formRequestor'>
+                <Form.Label className='fw-bold d-block'>Dancer</Form.Label>
+                <Form.Control type='text' placeholder='Your Name' value={requestorName} onChange={handleRequestorNameChange} required={true} />
+            </FormGroup>
+            <FormGroup className='mb-3' controlId='formMusicRequest'>
+                <Form.Label className='fw-bold d-block'>Track Request</Form.Label>
+                <Form.Control type='text' placeholder='Enter a track name and artist here' value={trackName} onChange={handleTrackNameChange} onKeyDown={handleTrackNameKeyPress} onKeyUp={handleTrackNameKeyUp} required={true} />
+                { showSuggestions ? <ul className='list-group my-3'>{renderTrackSuggestions()}</ul> : null }
+            </FormGroup>
+            <Form.Group className='my-3'>
+                <Button type='submit' onClick={handleSubmitRequest}>Submit</Button>
+            </Form.Group>
+        </Form>
     )
 }
 
