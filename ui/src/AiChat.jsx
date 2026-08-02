@@ -10,7 +10,7 @@ function AiChat() {
     const { selectedEvent, getMusicRequests } = useContext(AppContext);
     const [messages, setMessages] = useState([{ role: 'assistant', content: GREETING }]);
     const [input, setInput] = useState('');
-    const [options, setOptions] = useState([]);
+    const [options, setOptions] = useState(["I want a specific song", "I want anything by a specific artist", "I want a specific genre or decade", "I don't know the name, but the lyrics go..."]);
     const [isSending, setIsSending] = useState(false);
     const messagesEndRef = useRef(null);
 

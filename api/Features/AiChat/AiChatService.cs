@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Azure;
 using Azure.AI.OpenAI;
 using DjPortalApi.Features.Events;
@@ -100,7 +101,9 @@ public sealed class AiChatService : IAiChatService
                     if (string.Equals(toolCall.FunctionName, "present_options", StringComparison.Ordinal))
                     {
                         quickReplies = ParseOptions(toolCall);
-                        messages.Add(new ToolChatMessage(toolCall.Id, "{\"shown\":true}"));
+                        messages.Add(new ToolChatMessage(
+                            toolCall.Id,
+                            "{\"shown\":true,\"note\":\"The options are now visible to the dancer as tappable buttons. Your reply text must NOT list, number or repeat them.\"}"));
                         continue;
                     }
 
@@ -113,7 +116,7 @@ public sealed class AiChatService : IAiChatService
             }
 
             var reply = completion.Content.Count > 0 ? completion.Content[0].Text : string.Empty;
-            return new AiChatResponse { Reply = reply, RequestSubmitted = requestSubmitted, Options = quickReplies };
+            return new AiChatResponse { Reply = StripMarkdown(reply), RequestSubmitted = requestSubmitted, Options = quickReplies };
         }
 
         return new AiChatResponse
@@ -221,7 +224,8 @@ public sealed class AiChatService : IAiChatService
             Help the dancer find a track and submit a request.
 
             Finding music:
-            - When the dancer is vague (e.g. "some swing", "something upbeat", "a smoochy one"), use your own
+            - When the dancer says that they don't know the name, but knows the lyrics, be brief and encourage them to tell you what they remember
+            - When the dancer is vague (e.g. "some swing", "something upbeat", "something chill"), use your own
               music knowledge to brainstorm several SPECIFIC artists and songs that fit the vibe AND suit modern
               jive dancing (think what a good ceroc DJ would play for that request).
             - Call search_tracks first to check DJ Mark's own library and prefer tracks it returns.
@@ -232,6 +236,10 @@ public sealed class AiChatService : IAiChatService
             - Whenever your message asks the dancer to choose, call present_options so they can TAP their answer
               instead of typing: offer each suggested track as an option, and for confirmations offer choices like
               'Yes, request it' and 'Show me others'. The option labels must be exactly what they'd reply.
+            - When using the present_options tool, the options appear to the dancer as buttons, so your message must NEVER restate them. Do not list the
+              tracks, number them, or spell out the choices in your text — write only a brief lead-in such as
+              "Here are a few that would work a treat:" or "Want me to send that one over?" and let the buttons
+              speak for themselves.
 
             The requester's name:
             {nameGuidance}
@@ -246,7 +254,35 @@ public sealed class AiChatService : IAiChatService
             - When a submission fails, relay the returned error message to the user word for word.
 
             Keep replies short and warm. Suggest real songs and artists — never make up song titles that do not exist.
+
+            Formatting:
+            - The chat window shows your reply as plain text and does NOT render Markdown. Never use **bold**,
+              *italics*, `backticks`, headings or bullet markers — they appear to the dancer as raw punctuation.
+              Write in plain sentences.
             """;
+    }
+
+    // The chat bubbles render plain text, so any Markdown the model emits would show as raw punctuation.
+    private static readonly Regex MarkdownLink = new(@"\[([^\]\n]+)\]\((https?://[^\s)]+)\)", RegexOptions.Compiled);
+    private static readonly Regex MarkdownCode = new(@"`+([^`\n]+)`+", RegexOptions.Compiled);
+    private static readonly Regex MarkdownBold = new(@"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", RegexOptions.Compiled | RegexOptions.Singleline);
+    private static readonly Regex MarkdownItalic = new(@"(?<![\w*_])([*_])(?=\S)([^*_\n]+?)(?<=\S)\1(?![\w*_])", RegexOptions.Compiled);
+    private static readonly Regex MarkdownHeading = new(@"^[ \t]{0,3}#{1,6}[ \t]+", RegexOptions.Compiled | RegexOptions.Multiline);
+
+    private static string StripMarkdown(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return text;
+        }
+
+        text = MarkdownLink.Replace(text, "$1 ($2)");
+        text = MarkdownCode.Replace(text, "$1");
+        text = MarkdownBold.Replace(text, "$2");
+        text = MarkdownItalic.Replace(text, "$2");
+        text = MarkdownHeading.Replace(text, string.Empty);
+
+        return text.Trim();
     }
 
     private static List<string>? ParseOptions(ChatToolCall toolCall)
@@ -258,7 +294,7 @@ public sealed class AiChatService : IAiChatService
             {
                 var list = array.EnumerateArray()
                     .Where(x => x.ValueKind == JsonValueKind.String)
-                    .Select(x => x.GetString()!)
+                    .Select(x => StripMarkdown(x.GetString()!))
                     .Where(s => !string.IsNullOrWhiteSpace(s))
                     .ToList();
                 return list.Count > 0 ? list : null;
@@ -309,7 +345,7 @@ public sealed class AiChatService : IAiChatService
 
     private static readonly ChatTool PresentOptionsTool = ChatTool.CreateFunctionTool(
         "present_options",
-        "Show the dancer tappable quick-reply buttons so they don't have to type. Call this whenever your message asks them to choose — track shortlists, or confirmations. Provide 2 to 5 short options.",
+        "Show the dancer tappable quick-reply buttons so they don't have to type. Call this whenever your message asks them to choose — track shortlists, or confirmations. Provide 2 to 5 short options. The labels are rendered as buttons, so your accompanying message must not repeat them.",
         BinaryData.FromString("""
             {
               "type": "object",
