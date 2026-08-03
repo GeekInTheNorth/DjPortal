@@ -35,7 +35,7 @@
 
 <div class="container pt-3 text-light">
     <h1>Privacy Policy</h1>
-    <p><em>Last updated: 14 May 2026</em></p>
+    <p><em>Last updated: 03 August 2026</em></p>
 
     <p>This site (<a href="https://dj.stott.pro">https://dj.stott.pro</a>) is run
     by DJ Mark Stott to take music requests at Ceroc / Modern Jive events. We
@@ -49,7 +49,36 @@
         <li>The <strong>event</strong> you are requesting it for.</li>
         <li>An <strong>anonymous browser identifier</strong> (see Cookies below) that links your requests together for the same event.</li>
     </ul>
-    <p>We do not ask for or store your email address, phone number, postal address, or any social profile.</p>
+    <p>When you request a track we do not ask for or store your email address, phone
+    number, postal address, or any social profile.</p>
+
+    <h2 class="h4 mt-4">The DJ Assistant (AI chat)</h2>
+    <p>On each event page you can choose to chat to the DJ Assistant instead of filling in
+    the request form. If you do:</p>
+    <ul>
+        <li>What you type is sent to <strong>Azure OpenAI</strong>, Microsoft's hosted AI service, so it can suggest tracks and reply to you.</li>
+        <li>The name of the event goes with it, and &mdash; if you have requested a track before &mdash; the display name held against your browser identifier, so that you are not asked for it twice.</li>
+        <li>The conversation is <strong>not stored on this site</strong>. It lives in your browser tab and is sent back with each new message. Close or reload the page and it is gone.</li>
+        <li>To check that a track really exists, the assistant may send a short search phrase to <strong>Tavily</strong>, a web search service. Your name and your cookie identifier are never included in it.</li>
+        <li>Only the request you actually confirm is saved, exactly as if you had used the form &mdash; and it is deleted on the same timetable.</li>
+    </ul>
+    <p>You never have to use the assistant. The standard request form does the same job
+    without sending anything to an AI service.</p>
+
+    <h2 class="h4 mt-4">What we collect when you submit the contact form</h2>
+    <ul>
+        <li>The <strong>name</strong> you enter into the form.</li>
+        <li>The <strong>email address</strong> you enter into the form, so that a reply can be sent to you.</li>
+        <li>The <strong>subject and message</strong> you write.</li>
+    </ul>
+    <p>The form is sent to <strong>DJ Mark</strong> as an ordinary email and is not saved in
+    the site's own storage. It is never used for marketing and you will not be added to any
+    mailing list. Because it arrives as an email, it stays in DJ Mark's mailbox until it is
+    deleted, so it is not covered by the 48-hour deletion described below &mdash; ask at any
+    time and it will be removed.</p>
+    <p>The form also carries a hidden field that only automated bots fill in, and a
+    measurement of how long the form was open before you sent it. Both are used solely to
+    filter out spam, and neither is kept.</p>
 
     <h2 class="h4 mt-4">Cookies</h2>
     <p>We use a single essential cookie called <code>cydjr.requestor</code>. It contains
@@ -66,6 +95,7 @@
     <h2 class="h4 mt-4">Who can see your name</h2>
     <ul>
         <li><strong>The DJ</strong> can see the display name you enter, alongside your request.</li>
+        <li><strong>The DJ</strong> can also log a request on your behalf if you ask him in person, and may note your name against it as a reminder to check you are still on the floor when it comes up.</li>
         <li>
             <strong>Other dancers</strong> browsing the request list will see your request, but your name is never shown to other users.  Here is a list of replacement names they will see:
             <ul>
@@ -93,12 +123,69 @@
     information itself and every music request made for it &mdash; is permanently
     deleted within <strong>48 hours after the event has ended</strong>. This deletion
     is a manually triggered process and is <strong>non-recoverable</strong>.</p>
+    <p>Two things sit outside that: emails sent through the contact form, which stay in DJ
+    Mark's mailbox until deleted, and DJ Assistant conversations, which are never stored in
+    the first place.</p>
+
+    <h2 class="h4 mt-4">Where your data is held</h2>
+    <p>Events, music requests and the DJ's track catalogue are stored in
+    <strong>Microsoft Azure AI Search in the United Kingdom</strong>. DJ Assistant
+    conversations are processed by <strong>Azure OpenAI in the United Kingdom</strong>.
+    Neither is copied to a region outside the UK by us.</p>
+    <p>The two lookups the site makes to other companies are the exception: a Spotify track
+    lookup and, if the assistant needs it, a Tavily web search. Those companies operate
+    internationally and may handle the request outside the UK &mdash; which is why neither
+    of them is ever sent your name or your cookie identifier. See <em>Third parties</em>
+    below.</p>
 
     <h2 class="h4 mt-4">Third parties</h2>
     <ul>
-        <li>If you submit a Spotify track URL, the site calls the Spotify Web API to look up the track's title and artist. Only the Spotify track identifier is sent to Spotify &mdash; your name and your cookie identifier are not.</li>
-        <li>The site uses Microsoft Application Insights for diagnostics. Telemetry collected this way is not linked to your <code>cydjr.requestor</code> identifier.</li>
+        <li>If you submit a Spotify track URL, the site calls the <strong>Spotify Web API</strong> to look up the track's title and artist. Only the Spotify track identifier is sent to Spotify &mdash; your name and your cookie identifier are not.</li>
+        <li><strong>Azure OpenAI</strong> (Microsoft) handles DJ Assistant conversations. Microsoft states that prompts and replies are not used to train its own or OpenAI's models, and are held for up to 30 days only to check for misuse of the service. See <a href="https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy" rel="noopener noreferrer" target="_blank">Microsoft's data, privacy and security notice</a>.</li>
+        <li><strong>Tavily</strong> runs the web searches the assistant makes. Tavily states that it does not retain the queries sent to it, though a query may be passed on to its own upstream search providers when it cannot answer from its own index. See the <a href="https://www.tavily.com/privacy" rel="noopener noreferrer" target="_blank">Tavily privacy policy</a>.</li>
+        <li>The site uses <strong>Microsoft Application Insights</strong> for diagnostics &mdash; page requests, response times and errors. It is not linked to your <code>cydjr.requestor</code> identifier, and it does not record what you type into the track search box or the DJ Assistant.</li>
     </ul>
+
+    <h2 class="h4 mt-4">Who is responsible for your data</h2>
+    <p>The data controller is Mark Stott (DJ Mark), based in the United Kingdom. The
+    quickest way to reach us about anything on this page is the
+    <a href="/contact">contact form</a>.</p>
+
+    <h2 class="h4 mt-4">Why we are allowed to use it</h2>
+    <p>We rely on <strong>legitimate interests</strong> under the UK GDPR. To run a request
+    list at a dance event we need to know what was asked for, who asked for it, and that one
+    person is not quietly filling the whole list. What we collect is no more than you would
+    give a DJ walking up to the booth, and it is deleted shortly after the event.</p>
+    <p>The <code>cydjr.requestor</code> cookie is strictly necessary to provide the service
+    you asked for, so it does not need separate consent. We set no advertising, tracking or
+    profiling cookies.</p>
+
+    <h2 class="h4 mt-4">Your rights</h2>
+    <p>Under the UK GDPR you can ask us to:</p>
+    <ul>
+        <li>tell you what we hold about you, and give you a copy of it;</li>
+        <li>correct it if it is wrong &mdash; a mistyped display name, for instance;</li>
+        <li>delete it, which for requests happens anyway within 48 hours of the event ending;</li>
+        <li>stop using it, or restrict what we do with it.</li>
+    </ul>
+    <p>In practice these rights only apply while an event is upcoming or in progress. Once
+    the 48-hour deletion has run there is nothing left to show you, correct or erase &mdash;
+    so if you want us to act on a request, please get in touch before or during the event.
+    Contact form emails are the exception: they stay in the mailbox until deleted, so you can
+    ask about those at any time.</p>
+    <p>Ask through the <a href="/contact">contact form</a> and we will reply within one month,
+    and sooner where an event has not yet passed. Requests are only identified by a random
+    browser identifier and the display name you chose, so tell us which event it is and the
+    name you used &mdash; without both we cannot pick your requests out from anyone else's.</p>
+    
+    <h2 class="h4 mt-4">Complaints</h2>
+    <p>If you are unhappy with how your information has been handled, please tell us first
+    through the <a href="/contact">contact form</a> &mdash; mark it as a privacy complaint and
+    we will look into it and reply within one month. Most things are a misunderstanding or a
+    mistake we can simply put right.</p>
+    <p>You do not have to come to us first, and doing so does not affect your rights. You can
+    complain to the Information Commissioner's Office at any time, at
+    <a href="https://ico.org.uk/make-a-complaint/" rel="noopener noreferrer" target="_blank">ico.org.uk/make-a-complaint</a>.</p>
 </div>
 
 </main>
