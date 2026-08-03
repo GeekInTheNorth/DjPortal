@@ -2,7 +2,6 @@ using DjPortalApi.Features.AiChat;
 using DjPortalApi.Features.Contact;
 using DjPortalApi.Features.Deployment;
 using DjPortalApi.Features.Events;
-using DjPortalApi.Features.Insights;
 using DjPortalApi.Features.Requests;
 using DjPortalApi.Features.Spotify;
 using DjPortalApi.Features.Tracks;
@@ -27,7 +26,6 @@ builder.Services
     .AddScoped<IDeploymentService, DeploymentService>()
     .AddScoped<IEventRepository, EventRepository>()
     .AddScoped<IEventService, EventService>()
-    .AddScoped<IInsightsService, InsightsService>()
     .AddScoped<IRequestRepository, RequestRepository>()
     .AddScoped<IRequestService, RequestService>()
     .AddScoped<ISpotifyService, SpotifyService>()

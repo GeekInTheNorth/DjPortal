@@ -4,7 +4,6 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using DjPortalApi.Features;
 using DjPortalApi.Features.Tracks;
-using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -12,7 +11,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace DjPortalApi;
 
-public class TracksFunction(ITrackRepository trackRepository, TelemetryClient telemetryClient) : BaseFunction
+public class TracksFunction(ITrackRepository trackRepository) : BaseFunction
 {
     [Function("TrackSearchOptions")]
     public HttpResponseData TrackSearchOptions([HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "tracks/search")] HttpRequestData req)
@@ -26,8 +25,6 @@ public class TracksFunction(ITrackRepository trackRepository, TelemetryClient te
         var query = req.Query["query"];
         var lowBpm = ParseBpm(req.Query["lowBpm"], 100m);
         var highBpm = ParseBpm(req.Query["highBpm"], 145m);
-
-        LogTrackSearch(query);
 
         var tracks = await trackRepository.ListAsync(query, lowBpm, highBpm);
 
@@ -74,16 +71,6 @@ public class TracksFunction(ITrackRepository trackRepository, TelemetryClient te
         {
             return new ObjectResult(new { Error = ex.Message }) { StatusCode = (int)HttpStatusCode.InternalServerError };
         }
-    }
-
-    private void LogTrackSearch(string? query)
-    {
-        if (query is not { Length: >3 })
-        {
-            return;
-        }
-
-        telemetryClient.TrackEvent("TrackSearch", new Dictionary<string, string> { { "Query", query } });
     }
 
     private static decimal ParseBpm(string? value, decimal defaultValue)

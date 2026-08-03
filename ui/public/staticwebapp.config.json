@@ -41,10 +41,6 @@
       "allowedRoles": ["authenticated"]
     },
     {
-      "route": "/api/insights/searchterms",
-      "allowedRoles": ["authenticated"]
-    },
-    {
       "route": "/api/musicrequest/updatestatus",
       "allowedRoles": ["authenticated"]
     },

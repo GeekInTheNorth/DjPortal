@@ -33,7 +33,6 @@ The solution is deployed as a single [Azure Static Web App](https://learn.micros
 - Bulk delete: all events, all requests, expired events, and Azure Search index purge/recreate.
 - Upload the DJ track catalogue from CSV ([UploadTrackList.jsx](ui/src/DjPortal/UploadTrackList.jsx)) — recreates the `tracks` index.
 - Trigger a GitHub Actions rebuild of the site ([TriggerRebuild.jsx](ui/src/DjPortal/TriggerRebuild.jsx)) via `workflow_dispatch` — useful after editing event data so the static event pages regenerate.
-- Search term insights ([SearchTermInsights.jsx](ui/src/DjPortal/SearchTermInsights.jsx)) — pulls track-search queries from Application Insights to highlight songs dancers are looking for.
 
 ### Authentication
 - GitHub OAuth via Azure Static Web Apps (`/.auth/login/github`).
@@ -46,7 +45,7 @@ The solution is deployed as a single [Azure Static Web App](https://learn.micros
 - **.NET 8.0** with **Azure Functions V4** (isolated worker model)
 - **Azure AI Search** for all data persistence — three indexes: `events`, `requests`, `tracks` (plus a `ceroc-dj-synonyms` synonym map)
 - **Spotify Web API** for track metadata enrichment
-- **Application Insights** for telemetry and the search-term insights query
+- **Application Insights** for host telemetry (requests, dependencies, exceptions)
 - **CsvHelper** for CSV ingestion of the track catalogue
 - DI configured in [Program.cs](api/Program.cs); repositories inherit a shared [BaseRepository](api/Features/Common/BaseRepository.cs) that builds the Azure Search client from configuration.
 
@@ -71,7 +70,6 @@ DjPortal/
 │   │   ├── Common/              BaseRepository (Azure Search client factory)
 │   │   ├── Deployment/          GitHub Actions workflow_dispatch trigger
 │   │   ├── Events/              Event CRUD, .ics generation, tag rendering
-│   │   ├── Insights/            Application Insights query for track searches
 │   │   ├── Requests/            Music request domain (status, comparer, models)
 │   │   ├── Spotify/             Spotify track lookup
 │   │   ├── Tracks/              Azure Search-backed DJ track catalogue + CSV import
@@ -79,7 +77,6 @@ DjPortal/
 │   ├── EventsFunction.cs        HTTP triggers — events
 │   ├── RequestsFunction.cs      HTTP triggers — music requests
 │   ├── TracksFunction.cs        HTTP triggers — track search & CSV upload
-│   ├── InsightsFunction.cs      HTTP triggers — analytics
 │   ├── DeploymentFunction.cs    HTTP triggers — rebuild
 │   ├── Program.cs               DI registration & Functions host setup
 │   └── host.json                CORS for local dev
@@ -125,7 +122,6 @@ All routes are exposed under `/api/*` via the Static Web Apps proxy.
 | `/api/musicrequest/deleteall` | DELETE | Authenticated | Drop & recreate requests index |
 | `/api/tracks/search` | GET | Anonymous | Search the DJ track catalogue |
 | `/api/tracks/csvupload` | POST | Authenticated | Replace tracks index from CSV |
-| `/api/insights/searchterms` | GET | Authenticated | Recent track-search analytics |
 | `/api/deployment/rebuild` | POST | Authenticated | Fire GitHub Actions workflow_dispatch |
 
 ## Configuration
@@ -137,7 +133,6 @@ All routes are exposed under `/api/*` via the Static Web Apps proxy.
 | `SearchServiceAdminApiKey` | Azure AI Search admin key |
 | `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` | Spotify Web API client credentials |
 | `APPINSIGHTS_INSTRUMENTATIONKEY` | Application Insights instrumentation key |
-| `ApplicationInsights__AppId` / `ApplicationInsights__ApiKey` | App Insights API access for the search-term insights query |
 | `GitHubToken` / `GitHubOwner` / `GitHubRepo` / `GitHubWorkflowFileName` | Required by `/api/deployment/rebuild` to call `workflow_dispatch` |
 
 ### Frontend
