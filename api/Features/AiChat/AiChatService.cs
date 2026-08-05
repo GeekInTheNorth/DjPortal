@@ -1,45 +1,56 @@
+using System.ClientModel;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.AI.OpenAI;
 using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Requests;
-using DjPortalApi.Features.Tracks;
-using DjPortalApi.Features.WebSearch;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
 
 namespace DjPortalApi.Features.AiChat;
 
-public sealed class AiChatService : IAiChatService
+public sealed partial class AiChatService : IAiChatService
 {
+    private readonly ChatClient? _chatClient;
+
+    private readonly IAiChatTools _tools;
+
+    private readonly IRequestRepository _requestRepository;
+
+    private readonly ILogger<AiChatService> _logger;
+    
     private const int MaxToolIterations = 10;
 
     // Only the most recent chat entries are sent to the model to cap token growth.
     private const int MaxHistoryMessages = 20;
 
-    private const string DefaultRequestorName = "Mysterious Dancer";
+    // The chat bubbles render plain text, so any Markdown the model emits would show as raw punctuation.
+    [GeneratedRegex(@"\[([^\]\n]+)\]\((https?://[^\s)]+)\)")]
+    private static partial Regex MarkdownLink();
 
-    // The DJ logs requests on other people's behalf, so his own name is only the last resort.
-    private const string DefaultDjRequestorName = "DJ Mark";
+    [GeneratedRegex(@"`+([^`\n]+)`+")]
+    private static partial Regex MarkdownCode();
 
-    private readonly ChatClient? _chatClient;
-    private readonly ITrackRepository _trackRepository;
-    private readonly IWebSearchService _webSearchService;
-    private readonly IRequestService _requestService;
-    private readonly IRequestRepository _requestRepository;
+    [GeneratedRegex(@"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", RegexOptions.Singleline)]
+    private static partial Regex MarkdownBold();
+
+    [GeneratedRegex(@"(?<![\w*_])([*_])(?=\S)([^*_\n]+?)(?<=\S)\1(?![\w*_])")]
+    private static partial Regex MarkdownItalic();
+
+    [GeneratedRegex(@"^[ \t]{0,3}#{1,6}[ \t]+", RegexOptions.Multiline)]
+    private static partial Regex MarkdownHeading();
 
     public AiChatService(
         IConfiguration configuration,
-        ITrackRepository trackRepository,
-        IWebSearchService webSearchService,
-        IRequestService requestService,
-        IRequestRepository requestRepository)
+        IAiChatTools tools,
+        IRequestRepository requestRepository,
+        ILogger<AiChatService> logger)
     {
-        _trackRepository = trackRepository;
-        _webSearchService = webSearchService;
-        _requestService = requestService;
+        _tools = tools;
         _requestRepository = requestRepository;
+        _logger = logger;
 
         var endpoint = configuration.GetValue<string>("AzureOpenAiEndpoint");
         var apiKey = configuration.GetValue<string>("AzureOpenAiApiKey");
@@ -71,7 +82,7 @@ public sealed class AiChatService : IAiChatService
         // user id anyway, so any name held against it would be the wrong dancer.
         var knownName = mode == AiChatMode.Dj ? null : await _requestRepository.GetUserName(userId);
 
-        var messages = new List<ChatMessage> { new SystemChatMessage(BuildSystemPrompt(eventDetails, knownName, mode)) };
+        var messages = new List<ChatMessage> { new SystemChatMessage(AiChatPrompts.Build(eventDetails, knownName, mode)) };
         foreach (var message in history.TakeLast(MaxHistoryMessages))
         {
             var content = message.Content ?? string.Empty;
@@ -85,17 +96,43 @@ public sealed class AiChatService : IAiChatService
             }
         }
 
-        var options = new ChatCompletionOptions
+        var options = new ChatCompletionOptions();
+        foreach (var tool in _tools.GetTools())
         {
-            Tools = { SearchTracksTool, WebSearchTool, SubmitRequestTool, PresentOptionsTool }
-        };
+            options.Tools.Add(tool);
+        }
 
         var requestSubmitted = false;
         List<string>? quickReplies = null;
 
         for (var iteration = 0; iteration < MaxToolIterations; iteration++)
         {
-            ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, options);
+            ChatCompletion completion;
+            try
+            {
+                completion = await _chatClient.CompleteChatAsync(messages, options);
+            }
+            // Only a content-filter rejection is handled here; everything else (throttling, a bad key,
+            // a timeout) still propagates untouched. Returning immediately is deliberate — retrying the
+            // same blocked payload would just fail MaxToolIterations times over.
+            catch (ClientResultException ex) when (IsContentFilter(ex, out var categories))
+            {
+                _logger.LogWarning(
+                    "Azure OpenAI blocked the AI chat prompt. Mode: {Mode}, iteration: {Iteration}, categories: {Categories}, messages: {MessageCount}.",
+                    mode, iteration, categories, messages.Count);
+
+                return BuildContentFilteredResponse(mode, iteration, requestSubmitted);
+            }
+
+            // A 200 whose finish reason is ContentFilter means the model's own output was blocked.
+            if (completion.FinishReason == ChatFinishReason.ContentFilter)
+            {
+                _logger.LogWarning(
+                    "Azure OpenAI blocked the AI chat completion. Mode: {Mode}, iteration: {Iteration}.",
+                    mode, iteration);
+
+                return BuildContentFilteredResponse(mode, iteration, requestSubmitted);
+            }
 
             if (completion.FinishReason == ChatFinishReason.ToolCalls)
             {
@@ -103,18 +140,16 @@ public sealed class AiChatService : IAiChatService
                 foreach (var toolCall in completion.ToolCalls)
                 {
                     // present_options only carries UI quick-replies back to the caller; it does no work.
-                    if (string.Equals(toolCall.FunctionName, "present_options", StringComparison.Ordinal))
+                    if (string.Equals(toolCall.FunctionName, AiChatTools.PresentOptionsToolName, StringComparison.Ordinal))
                     {
                         quickReplies = ParseOptions(toolCall);
-                        messages.Add(new ToolChatMessage(
-                            toolCall.Id,
-                            "{\"shown\":true,\"note\":\"The options are now visible to the dancer as tappable buttons. Your reply text must NOT list, number or repeat them.\"}"));
+                        messages.Add(new ToolChatMessage(toolCall.Id, AiChatTools.PresentOptionsResult));
                         continue;
                     }
 
-                    var (resultJson, submitted) = await ExecuteToolAsync(toolCall, eventDetails, userId, isAuthenticated, knownName);
-                    requestSubmitted = requestSubmitted || submitted;
-                    messages.Add(new ToolChatMessage(toolCall.Id, resultJson));
+                    var result = await _tools.ExecuteToolAsync(toolCall, eventDetails, userId, isAuthenticated, knownName);
+                    requestSubmitted = requestSubmitted || result.RequestSubmitted;
+                    messages.Add(new ToolChatMessage(toolCall.Id, result.ResultJson));
                 }
 
                 continue;
@@ -132,202 +167,134 @@ public sealed class AiChatService : IAiChatService
         };
     }
 
-    private async Task<(string resultJson, bool submitted)> ExecuteToolAsync(
-        ChatToolCall toolCall,
-        EventDetails eventDetails,
-        Guid userId,
-        bool isAuthenticated,
-        string? knownName)
+    // Iteration 0 means the payload was the system prompt plus the client's own history, so the message
+    // the dancer just sent is the culprit. Later iterations also carry tool results they never see.
+    private static AiChatResponse BuildContentFilteredResponse(AiChatMode mode, int iteration, bool requestSubmitted)
     {
-        JsonElement root;
+        var reply = (mode, iteration) switch
+        {
+            (AiChatMode.Dj, 0) => "That tripped Azure's content filter, so nothing reached the model. I've dropped it from the conversation — rephrase it and we'll carry on.",
+            (AiChatMode.Dj, _) => "A search result tripped Azure's content filter part way through, so I stopped there. Try narrowing it down, or add the track straight from the request form.",
+            (_, 0) => "Sorry — I couldn't send that one through. It's not you: the AI is fussy about certain wording. Try the artist or the song title instead, or a different line of the lyrics.",
+            _ => "Sorry — I turned up something I'm not able to repeat back. Let's try another angle: do you know the artist, or roughly when it came out?"
+        };
+
+        return new AiChatResponse
+        {
+            Reply = reply,
+            // The filter can trip after a request was already submitted, so the tick and the list refresh
+            // still need to happen.
+            RequestSubmitted = requestSubmitted,
+            ContentFiltered = true,
+            // Any earlier quick-replies belong to a conversation that just hit a wall — offer a way out instead.
+            Options = mode == AiChatMode.Dancer ? ["I know the artist", "I know the title", "Just suggest something"] : null
+        };
+    }
+
+    // Azure rejects a filtered prompt with a 400 before the model sees it. Never throws: it is used as an
+    // exception filter, so a parsing problem must not decide whether the exception is handled.
+    private static bool IsContentFilter(ClientResultException ex, out string categories)
+    {
+        categories = "unspecified";
+
+        if (ex.Status != 400)
+        {
+            return false;
+        }
+
         try
         {
-            root = JsonDocument.Parse(toolCall.FunctionArguments.ToString()).RootElement;
+            string? body = null;
+            try
+            {
+                body = ex.GetRawResponse()?.Content?.ToString();
+            }
+            catch (InvalidOperationException)
+            {
+                // The response wasn't buffered — the message carries the same JSON.
+            }
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                body = ex.Message;
+            }
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return false;
+            }
+
+            using var document = JsonDocument.Parse(body);
+
+            var error = document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("error", out var wrapped)
+                    ? wrapped
+                    : document.RootElement;
+
+            if (error.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            var inner = error.TryGetProperty("innererror", out var innerElement) && innerElement.ValueKind == JsonValueKind.Object
+                ? innerElement
+                : default;
+
+            var filtered = string.Equals(error.GetString("code"), "content_filter", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(inner.GetString("code"), "ResponsibleAIPolicyViolation", StringComparison.OrdinalIgnoreCase);
+
+            if (!filtered)
+            {
+                return false;
+            }
+
+            var tripped = ReadTrippedCategories(inner);
+            if (tripped.Count > 0)
+            {
+                categories = string.Join(", ", tripped);
+            }
+
+            return true;
         }
-        catch (JsonException)
+        catch
         {
-            return (JsonSerializer.Serialize(new { error = "Invalid arguments." }), false);
+            return false;
         }
+    }
 
-        switch (toolCall.FunctionName)
+    // Severity categories report 'filtered' with a 'severity'; detection ones (jailbreak, profanity) report
+    // 'detected' instead, so the shapes are read defensively rather than bound to a model.
+    private static List<string> ReadTrippedCategories(JsonElement inner)
+    {
+        var tripped = new List<string>();
+
+        if (inner.ValueKind != JsonValueKind.Object
+            || !inner.TryGetProperty("content_filter_result", out var results)
+            || results.ValueKind != JsonValueKind.Object)
         {
-            case "search_tracks":
-            {
-                var query = GetString(root, "query");
-                var lowBpm = GetDecimal(root, "lowBpm") ?? 100m;
-                var highBpm = GetDecimal(root, "highBpm") ?? 145m;
-                var tracks = await _trackRepository.ListAsync(query, lowBpm, highBpm);
-                var results = tracks.Select(t => new { title = t.Title, artist = t.Artist, bpm = t.BPM, time = t.Time });
-                return (JsonSerializer.Serialize(new { results }), false);
-            }
-
-            case "web_search":
-            {
-                var query = GetString(root, "query") ?? string.Empty;
-                var hits = await _webSearchService.Search(query, 5);
-                var results = hits.Select(r => new { title = r.Title, url = r.Url, snippet = r.Content });
-                return (JsonSerializer.Serialize(new { results }), false);
-            }
-
-            case "submit_request":
-            {
-                var spotifyUrl = GetString(root, "spotifyUrl");
-                var trackName = GetString(root, "trackName");
-                var requestedBy = GetString(root, "requestedBy");
-
-                if (string.IsNullOrWhiteSpace(trackName) && string.IsNullOrWhiteSpace(spotifyUrl))
-                {
-                    return (JsonSerializer.Serialize(new { success = false, error = "A track is required before submitting." }), false);
-                }
-
-                // Never block a submission on a missing name: fall back to the known cookie name, then a default.
-                if (string.IsNullOrWhiteSpace(requestedBy))
-                {
-                    requestedBy = !string.IsNullOrWhiteSpace(knownName) ? knownName : DefaultRequestorName;
-                }
-
-                var model = new MusicRequestModel
-                {
-                    EventId = eventDetails.Id.ToString(),
-                    // A Spotify URL takes precedence so the request pipeline can enrich the track name.
-                    MusicRequest = !string.IsNullOrWhiteSpace(spotifyUrl) ? spotifyUrl : trackName,
-                    RequestedBy = requestedBy,
-                    Bpm = GetDecimal(root, "bpm"),
-                    Time = GetString(root, "time")
-                };
-
-                var result = await _requestService.CreateAsync(eventDetails.Id, userId, isAuthenticated, model);
-                if (result.Outcome == CreateRequestOutcome.QuotaExceeded)
-                {
-                    return (JsonSerializer.Serialize(new { success = false, error = result.Message }), false);
-                }
-
-                return (JsonSerializer.Serialize(new { success = true, track = result.Request?.TrackName }), true);
-            }
-
-            default:
-                return (JsonSerializer.Serialize(new { error = "Unknown tool." }), false);
+            return tripped;
         }
+
+        foreach (var category in results.EnumerateObject())
+        {
+            if (category.Value.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var isFiltered = category.Value.TryGetProperty("filtered", out var f) && f.ValueKind == JsonValueKind.True;
+            var isDetected = category.Value.TryGetProperty("detected", out var d) && d.ValueKind == JsonValueKind.True;
+            if (!isFiltered && !isDetected)
+            {
+                continue;
+            }
+
+            var severity = category.Value.GetString("severity");
+            tripped.Add(severity is null ? category.Name : $"{category.Name}:{severity}");
+        }
+
+        return tripped;
     }
-
-    private static string BuildSystemPrompt(EventDetails eventDetails, string? knownName, AiChatMode mode)
-        => mode == AiChatMode.Dj
-            ? BuildDjPrompt(eventDetails)
-            : BuildDancerPrompt(eventDetails, knownName);
-
-    // Mechanical rules that apply to both flavours of the assistant.
-    private const string OptionsGuidance = """
-        - Whenever your message asks them to choose, call present_options so they can TAP their answer
-          instead of typing: offer each suggested track as an option, and for confirmations offer choices
-          like 'Yes, request it' and 'Show me others'. The option labels must be exactly what they'd reply.
-        - When using the present_options tool, the options appear as buttons, so your message must NEVER
-          restate them. Do not list the tracks, number them, or spell out the choices in your text — write
-          only a brief lead-in such as "Here are a few that would work a treat:" or "Want me to send that
-          one over?" and let the buttons speak for themselves.
-        """;
-
-    private const string FormattingGuidance = """
-        Formatting:
-        - The chat window shows your reply as plain text and does NOT render Markdown. Never use **bold**,
-          *italics*, `backticks`, headings or bullet markers — they appear as raw punctuation. Write in
-          plain sentences.
-        """;
-
-    private static string BuildDjPrompt(EventDetails eventDetails)
-    {
-        return $"""
-            You are DJ Mark's music assistant, and you are talking to Mark himself in his DJ portal for the
-            event "{eventDetails.Name}". This is a modern jive / ceroc dance event, so tracks must be
-            danceable at a partner-dance tempo. He is either building his set or logging a request a dancer
-            has just made in person, so be quick and practical — he is working.
-
-            Finding music:
-            - Call search_tracks first to check his own library and prefer tracks it returns.
-            - Use web_search when you need to confirm a track really exists, or to find current/recent
-              releases and chart hits that may be beyond your own knowledge. Cross-reference what you find.
-            - When he is vague (e.g. "something to lift the floor", "a smoochy one to slow it down"), use your
-              own music knowledge to brainstorm several SPECIFIC artists and songs that fit AND suit modern
-              jive dancing.
-            - Offer a short shortlist of concrete options by name rather than asking him to be more specific.
-            - He may just be after ideas for the set. Never push him towards submitting — only submit when he
-              asks you to.
-            {OptionsGuidance}
-
-            Who the request is for:
-            - Requests are logged against a dancer's name. Once he settles on a track, ask who it is for and
-              pass that as requestedBy — offer 'It's for me' as one of the tappable options.
-            - NEVER offer 'Add my name'; that is for dancers on the public page.
-            - If he confirms without naming anyone, submit using '{DefaultDjRequestorName}'.
-
-            Submitting:
-            - When he picks a track, briefly acknowledge THAT specific track by name and move forward.
-              NEVER re-list the earlier shortlist or repeat your previous message — that looks like a failure.
-            - Confirm with tappable options via present_options, then call submit_request as soon as he confirms.
-            - His requests are approved automatically, so after submit_request succeeds reply with a short
-              confirmation like "Added and approved — it's in the list." and do NOT show any options.
-            - When a submission fails, relay the returned error message word for word.
-
-            Keep replies short and to the point. Suggest real songs and artists — never make up song titles
-            that do not exist.
-
-            {FormattingGuidance}
-            """;
-    }
-
-    private static string BuildDancerPrompt(EventDetails eventDetails, string? knownName)
-    {
-        var nameGuidance = string.IsNullOrWhiteSpace(knownName)
-            ? $"""
-              - You do not know the dancer's name, but NEVER interrupt the flow to ask for it. When confirming a
-                track, include 'Add my name' as one of the tappable options. Only if they tap it should you ask
-                them to type a name. If they confirm without giving one, submit using '{DefaultRequestorName}'.
-              """
-            : $"""
-              - The dancer is known as '{knownName}' from their previous requests. Use this name silently and NEVER
-                ask for it — only change it if they explicitly give a different name.
-              """;
-
-        return $"""
-            You are DJ Mark's friendly music request assistant for the event "{eventDetails.Name}".
-            This is a modern jive / ceroc dance event, so tracks should be danceable at a partner-dance tempo.
-            Help the dancer find a track and submit a request.
-
-            Finding music:
-            - When the dancer says that they don't know the name, but knows the lyrics, be brief and encourage them to tell you what they remember
-            - When the dancer is vague (e.g. "some swing", "something upbeat", "something chill"), use your own
-              music knowledge to brainstorm several SPECIFIC artists and songs that fit the vibe AND suit modern
-              jive dancing (think what a good ceroc DJ would play for that request).
-            - Call search_tracks first to check DJ Mark's own library and prefer tracks it returns.
-            - Use web_search when you need to confirm a track really exists, or to find current/recent releases and
-              chart hits that may be beyond your own knowledge (e.g. an artist's latest single). Cross-reference what
-              you find, then suggest real tracks.
-            - Offer a short shortlist of concrete options by name rather than asking the dancer to be more specific.
-            {OptionsGuidance}
-
-            The requester's name:
-            {nameGuidance}
-
-            Submitting:
-            - When the dancer picks a track, briefly acknowledge THAT specific track by name and move forward.
-              NEVER re-list the earlier shortlist or repeat your previous message — that looks like a failure.
-            - Confirm with tappable options via present_options (e.g. 'Yes, request it', 'Add my name',
-              'Show me others'), then call submit_request as soon as they confirm.
-            - After submit_request succeeds, reply with a short confirmation like "Done — I've sent your request to
-              DJ Mark!" and do NOT show any options.
-            - When a submission fails, relay the returned error message to the user word for word.
-
-            Keep replies short and warm. Suggest real songs and artists — never make up song titles that do not exist.
-
-            {FormattingGuidance}
-            """;
-    }
-
-    // The chat bubbles render plain text, so any Markdown the model emits would show as raw punctuation.
-    private static readonly Regex MarkdownLink = new(@"\[([^\]\n]+)\]\((https?://[^\s)]+)\)", RegexOptions.Compiled);
-    private static readonly Regex MarkdownCode = new(@"`+([^`\n]+)`+", RegexOptions.Compiled);
-    private static readonly Regex MarkdownBold = new(@"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", RegexOptions.Compiled | RegexOptions.Singleline);
-    private static readonly Regex MarkdownItalic = new(@"(?<![\w*_])([*_])(?=\S)([^*_\n]+?)(?<=\S)\1(?![\w*_])", RegexOptions.Compiled);
-    private static readonly Regex MarkdownHeading = new(@"^[ \t]{0,3}#{1,6}[ \t]+", RegexOptions.Compiled | RegexOptions.Multiline);
 
     private static string StripMarkdown(string text)
     {
@@ -336,11 +303,11 @@ public sealed class AiChatService : IAiChatService
             return text;
         }
 
-        text = MarkdownLink.Replace(text, "$1 ($2)");
-        text = MarkdownCode.Replace(text, "$1");
-        text = MarkdownBold.Replace(text, "$2");
-        text = MarkdownItalic.Replace(text, "$2");
-        text = MarkdownHeading.Replace(text, string.Empty);
+        text = MarkdownLink().Replace(text, "$1 ($2)");
+        text = MarkdownCode().Replace(text, "$1");
+        text = MarkdownBold().Replace(text, "$2");
+        text = MarkdownItalic().Replace(text, "$2");
+        text = MarkdownHeading().Replace(text, string.Empty);
 
         return text.Trim();
     }
@@ -367,86 +334,4 @@ public sealed class AiChatService : IAiChatService
 
         return null;
     }
-
-    private static string? GetString(JsonElement root, string name)
-        => root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
-            ? value.GetString()
-            : null;
-
-    private static decimal? GetDecimal(JsonElement root, string name)
-    {
-        if (!root.TryGetProperty(name, out var value))
-        {
-            return null;
-        }
-
-        return value.ValueKind switch
-        {
-            JsonValueKind.Number when value.TryGetDecimal(out var number) => number,
-            JsonValueKind.String when decimal.TryParse(value.GetString(), out var parsed) => parsed,
-            _ => null
-        };
-    }
-
-    private static readonly ChatTool SearchTracksTool = ChatTool.CreateFunctionTool(
-        "search_tracks",
-        "Search DJ Mark's own music library. Use this first. Returns up to 10 tracks, each with title, artist, bpm and time.",
-        BinaryData.FromString("""
-            {
-              "type": "object",
-              "properties": {
-                "query": { "type": "string", "description": "Artist, song name or keywords to search for." },
-                "lowBpm": { "type": "number", "description": "Optional minimum beats per minute." },
-                "highBpm": { "type": "number", "description": "Optional maximum beats per minute." }
-              },
-              "required": ["query"]
-            }
-            """));
-
-    private static readonly ChatTool PresentOptionsTool = ChatTool.CreateFunctionTool(
-        "present_options",
-        "Show the dancer tappable quick-reply buttons so they don't have to type. Call this whenever your message asks them to choose — track shortlists, or confirmations. Provide 2 to 5 short options. The labels are rendered as buttons, so your accompanying message must not repeat them.",
-        BinaryData.FromString("""
-            {
-              "type": "object",
-              "properties": {
-                "options": {
-                  "type": "array",
-                  "items": { "type": "string" },
-                  "description": "2-5 short button labels, each a natural reply the dancer might tap, e.g. 'Light Up - Kylie Minogue', 'Yes, request it' or 'Show me others'."
-                }
-              },
-              "required": ["options"]
-            }
-            """));
-
-    private static readonly ChatTool WebSearchTool = ChatTool.CreateFunctionTool(
-        "web_search",
-        "Search the web to confirm a real track exists or to find current/recent releases and chart hits. Returns title, url and snippet.",
-        BinaryData.FromString("""
-            {
-              "type": "object",
-              "properties": {
-                "query": { "type": "string", "description": "A concise search phrase, e.g. 'Kylie Minogue latest single' or 'best modern jive swing tracks'." }
-              },
-              "required": ["query"]
-            }
-            """));
-
-    private static readonly ChatTool SubmitRequestTool = ChatTool.CreateFunctionTool(
-        "submit_request",
-        "Submit the chosen track as a request for this event. Only call after confirming the track with the user.",
-        BinaryData.FromString("""
-            {
-              "type": "object",
-              "properties": {
-                "trackName": { "type": "string", "description": "The track as 'Title, Artist'." },
-                "requestedBy": { "type": "string", "description": "The dancer's name if known; omit if they haven't given one." },
-                "bpm": { "type": "number", "description": "Optional beats per minute from a library result." },
-                "time": { "type": "string", "description": "Optional timing/length from a library result." },
-                "spotifyUrl": { "type": "string", "description": "A spotify track url ONLY if the dancer pasted one; otherwise omit." }
-              },
-              "required": ["trackName"]
-            }
-            """));
 }

@@ -31,6 +31,7 @@ builder.Services
     .AddScoped<ISpotifyService, SpotifyService>()
     .AddScoped<ITrackRepository, TrackRepository>()
     .AddScoped<IWebSearchService, WebSearchService>()
+    .AddScoped<IAiChatTools, AiChatTools>()
     .AddScoped<IAiChatService, AiChatService>();
 
 builder.Build().Run();

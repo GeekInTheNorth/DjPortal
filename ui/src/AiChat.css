@@ -45,6 +45,11 @@
     border: 1px solid #a3cfbb;
 }
 
+/* Blocked by the content filter: still shown so the conversation reads correctly, but no longer sent. */
+.ai-chat-bubble-excluded {
+    opacity: 0.55;
+}
+
 .ai-chat-check {
     font-weight: 700;
 }

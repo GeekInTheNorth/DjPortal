@@ -9,25 +9,53 @@ const DANCER_GREETING = "Hi! I'm DJ Mark's assistant. Tell me what you fancy hea
 
 const DANCER_OPTIONS = ["I want a specific song", "I want anything by a specific artist", "I want a specific genre or decade", "I don't know the name, but the lyrics go..."];
 
+// Prefixing the next message tells the assistant it is being given a half-remembered line rather than a
+// title, and gives the content filter enough context not to read the lyric as something it isn't.
+const LYRICS_PREFIX = 'It has the lyrics ';
+
+const isLyricsOption = (option) => /lyric/i.test(option);
+
+// Excluded messages stay on screen but are never resent, so a phrase that tripped the content filter
+// cannot go on blocking every subsequent turn.
+const toWireMessages = (list) => list
+    .filter((message) => !message.excluded)
+    .map(({ role, content }) => ({ role, content }));
+
+const excludeLastUserMessage = (list) => {
+    const lastUser = list.map((message) => message.role).lastIndexOf('user');
+
+    return lastUser === -1
+        ? list
+        : list.map((message, index) => (index >= lastUser ? { ...message, excluded: true } : message));
+};
+
 function AiChat({ greeting = DANCER_GREETING, initialOptions = DANCER_OPTIONS, mode = 'dancer' }) {
     const { selectedEvent, getMusicRequests } = useContext(AppContext);
     const [messages, setMessages] = useState([{ role: 'assistant', content: greeting }]);
     const [input, setInput] = useState('');
     const [options, setOptions] = useState(initialOptions);
     const [isSending, setIsSending] = useState(false);
+    const [awaitingLyrics, setAwaitingLyrics] = useState(false);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, options, isSending]);
 
-    const sendMessage = async (text) => {
+    const sendMessage = async (text, fromOption = false) => {
         const trimmed = text.trim();
         if (!trimmed || isSending) {
             return;
         }
 
-        const nextMessages = [...messages, { role: 'user', content: trimmed }];
+        // They tapped the lyrics option last time, so this is the line they remember.
+        const needsLyricsPrefix = awaitingLyrics
+            && !fromOption
+            && !trimmed.toLowerCase().startsWith(LYRICS_PREFIX.trim().toLowerCase());
+        const content = needsLyricsPrefix ? `${LYRICS_PREFIX}${trimmed}` : trimmed;
+        setAwaitingLyrics(fromOption && isLyricsOption(trimmed));
+
+        const nextMessages = [...messages, { role: 'user', content }];
         setMessages(nextMessages);
         setInput('');
         setOptions([]);
@@ -37,11 +65,15 @@ function AiChat({ greeting = DANCER_GREETING, initialOptions = DANCER_OPTIONS, m
             const response = await axios.post(import.meta.env.VITE_APP_AI_CHAT, {
                 eventId: selectedEvent.id,
                 mode: mode,
-                messages: nextMessages
+                messages: toWireMessages(nextMessages)
             });
             const reply = response?.data?.reply || "Sorry, I didn't catch that. Could you try rephrasing?";
             const submitted = !!response?.data?.requestSubmitted;
-            setMessages((prev) => [...prev, { role: 'assistant', content: reply, submitted }]);
+            const contentFiltered = !!response?.data?.contentFiltered;
+            setMessages((prev) => [
+                ...(contentFiltered ? excludeLastUserMessage(prev) : prev),
+                { role: 'assistant', content: reply, submitted }
+            ]);
             setOptions(Array.isArray(response?.data?.options) ? response.data.options : []);
 
             if (submitted) {
@@ -64,7 +96,7 @@ function AiChat({ greeting = DANCER_GREETING, initialOptions = DANCER_OPTIONS, m
             <div className='ai-chat-messages'>
                 {messages.map((message, index) => (
                     <div key={index} className={`ai-chat-row ai-chat-row-${message.role}`}>
-                        <div className={`ai-chat-bubble ai-chat-bubble-${message.role}${message.submitted ? ' ai-chat-bubble-success' : ''}`}>
+                        <div className={`ai-chat-bubble ai-chat-bubble-${message.role}${message.submitted ? ' ai-chat-bubble-success' : ''}${message.excluded ? ' ai-chat-bubble-excluded' : ''}`}>
                             {message.submitted && <span className='ai-chat-check' aria-hidden='true'>✓ </span>}
                             {message.content}
                         </div>
@@ -83,7 +115,7 @@ function AiChat({ greeting = DANCER_GREETING, initialOptions = DANCER_OPTIONS, m
             {options.length > 0 && !isSending && (
                 <div className='ai-chat-options mt-3'>
                     {options.map((option, index) => (
-                        <Button key={index} variant='outline-primary' size='sm' onClick={() => sendMessage(option)}>
+                        <Button key={index} variant='outline-primary' size='sm' onClick={() => sendMessage(option, true)}>
                             {option}
                         </Button>
                     ))}
