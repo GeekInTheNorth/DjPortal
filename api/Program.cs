@@ -3,7 +3,6 @@ using DjPortalApi.Features.Contact;
 using DjPortalApi.Features.Deployment;
 using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Requests;
-using DjPortalApi.Features.Spotify;
 using DjPortalApi.Features.Tracks;
 using DjPortalApi.Features.WebSearch;
 using Microsoft.Azure.Functions.Worker;
@@ -28,7 +27,6 @@ builder.Services
     .AddScoped<IEventService, EventService>()
     .AddScoped<IRequestRepository, RequestRepository>()
     .AddScoped<IRequestService, RequestService>()
-    .AddScoped<ISpotifyService, SpotifyService>()
     .AddScoped<ITrackRepository, TrackRepository>()
     .AddScoped<IWebSearchService, WebSearchService>()
     .AddScoped<IAiChatTools, AiChatTools>()

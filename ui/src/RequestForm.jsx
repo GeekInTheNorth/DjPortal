@@ -233,7 +233,7 @@ function RequestForm() {
                 </FormGroup>
                 <FormGroup className='mb-3' controlId='formMusicRequest'>
                     <Form.Label className='fw-bold d-block'>Your Request</Form.Label>
-                    <div className='form-text'>Enter an <strong>artist</strong>, <strong>song name</strong> or <strong>spotify</strong> link here.  Optionally you can you click or tap on a suggestion as they appear and it will complete this field ready to submit.</div>
+                    <div className='form-text'>Enter an <strong>artist</strong>, <strong>song name</strong> or a <strong>link</strong> here.  Optionally you can you click or tap on a suggestion as they appear and it will complete this field ready to submit.</div>
                     <div className='request-track-field'>
                         <Form.Control
                             type='text'

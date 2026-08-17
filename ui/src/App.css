@@ -22,10 +22,12 @@ body {
   color: white;
 }
 
-.spotify-link {
-  display: inline-block;
-  margin-left: 0.25rem;
-  color: #1DB954;
+/* A request that is just a pasted URL renders as a single link in place of the track name, so it
+   has to read as one — the global anchor rule drops the underline. Long URLs wrap rather than
+   overflow the row on narrow screens. */
+.request-link {
+  text-decoration: underline;
+  overflow-wrap: anywhere;
 }
 
 /* The page body is black, so inactive tabs (transparent by default) would show through.
