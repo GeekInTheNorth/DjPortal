@@ -46,7 +46,7 @@
     <p>When you request a track, we do not ask for or store any other data than that which is listed specifically below:</p>
     <ul>
         <li>The <strong>display name</strong> you enter on the request form.</li>
-        <li>The <strong>track</strong> you ask for &mdash; either a song name or a Spotify track URL.</li>
+        <li>The <strong>track</strong> you ask for &mdash; either a song name or a link, stored exactly as you pasted it.</li>
         <li>The <strong>event</strong> you are requesting it for.</li>
         <li>An <strong>anonymous browser identifier</strong> (see Cookies below) that links your requests together for the same event.</li>
     </ul>
@@ -130,15 +130,14 @@
     <strong>Microsoft Azure AI Search in the United Kingdom</strong>. DJ Assistant
     conversations are processed by <strong>Azure OpenAI in the United Kingdom</strong>.
     Neither is copied to a region outside the UK by us.</p>
-    <p>The two lookups the site makes to other companies are the exception: a Spotify track
-    lookup and, if the assistant needs it, a Tavily web search. Those companies operate
-    internationally and may handle the request outside the UK &mdash; which is why neither
-    of them is ever sent your name or your cookie identifier. See <em>Third parties</em>
-    below.</p>
+    <p>The one lookup the site makes to another company is the exception: if the assistant
+    needs it, a Tavily web search. Tavily operates internationally and may handle the request
+    outside the UK &mdash; which is why it is never sent your name or your cookie identifier.
+    See <em>Third parties</em> below.</p>
 
     <h2 class="h4 mt-4">Third parties</h2>
     <ul>
-        <li>If you submit a Spotify track URL, the site calls the <strong>Spotify Web API</strong> to look up the track's title and artist. Only the Spotify track identifier is sent to Spotify &mdash; your name and your cookie identifier are not.</li>
+        <li>If you submit a <strong>link</strong>, the site stores it and shows it to the DJ. It does not visit the link or send anything to the site the link points at. If the DJ chooses to open it, the destination site's own privacy policy applies from that point.</li>
         <li><strong>Azure OpenAI</strong> (Microsoft) handles DJ Assistant conversations. Microsoft states that prompts and replies are not used to train its own or OpenAI's models, and are held for up to 30 days only to check for misuse of the service. See <a href="https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy" rel="noopener noreferrer" target="_blank">Microsoft's data, privacy and security notice</a>.</li>
         <li><strong>Tavily</strong> runs the web searches the assistant makes. Tavily states that it does not retain the queries sent to it, though a query may be passed on to its own upstream search providers when it cannot answer from its own index. See the <a href="https://www.tavily.com/privacy" rel="noopener noreferrer" target="_blank">Tavily privacy policy</a>.</li>
         <li>The site uses <strong>Microsoft Application Insights</strong> for diagnostics &mdash; page requests, response times and errors. It is not linked to your <code>cydjr.requestor</code> identifier, and it does not record what you type into the track search box or the DJ Assistant.</li>

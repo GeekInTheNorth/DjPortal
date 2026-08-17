@@ -1,10 +1,8 @@
-using DjPortalApi.Features.Spotify;
+using DjPortalApi.Features.Extensions;
 
 namespace DjPortalApi.Features.Requests;
 
-public sealed class RequestService(
-    IRequestRepository requestRepository,
-    ISpotifyService spotifyService) : IRequestService
+public sealed class RequestService(IRequestRepository requestRepository) : IRequestService
 {
     public async Task<CreateResult> CreateAsync(Guid eventId, Guid userId, bool isAuthenticated, MusicRequestModel model)
     {
@@ -37,31 +35,22 @@ public sealed class RequestService(
             newRequest.UserId = Guid.NewGuid();
         }
 
-        newRequest = await ProcessSpotifyUrl(newRequest);
+        ApplyLink(newRequest);
         await requestRepository.Add(newRequest);
 
         return CreateResult.Created(newRequest);
     }
 
-    private async Task<MusicRequest> ProcessSpotifyUrl(MusicRequest request)
+    /// <summary>
+    /// A request that is nothing but a URL is stored as a link, with the track name replaced by the
+    /// domain so the DJ can see where it points without following it.
+    /// </summary>
+    private static void ApplyLink(MusicRequest request)
     {
-        if (spotifyService.TryGetSpotifyId(request.TrackName, out var trackId))
+        if (request.TrackName.TryGetLink(out var url, out var domain))
         {
-            request.SpotifyUrl = request.TrackName;
-            var spotifyTrack = await spotifyService.GetTrack(trackId);
-            if (spotifyTrack != null)
-            {
-                var songName = spotifyTrack.Name;
-                var artistList = spotifyTrack.Artists?.Select(x => x.Name).ToList();
-                var artist = artistList != null ? string.Join(", ", artistList) : "Unknown Artist";
-                request.TrackName = $"{songName} - {artist}";
-            }
-            else
-            {
-                request.TrackName = "See Link:";
-            }
+            request.LinkUrl = url;
+            request.TrackName = $"Link: {domain}";
         }
-
-        return request;
     }
 }

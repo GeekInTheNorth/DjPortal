@@ -18,7 +18,7 @@ The solution is deployed as a single [Azure Static Web App](https://learn.micros
 
 ### Music requests
 - Dancers can submit song requests for any event marked as **Requestable**.
-- Requests can be either a free-text song name or a pasted Spotify track URL — Spotify URLs are automatically resolved to *Track Name - Artist(s)* via the Spotify API.
+- Requests can be either a free-text song name or a pasted URL — a request that is nothing but an `http(s)` URL is stored as a link and shown as *Link: domain*, hyperlinked to the original.
 - Anonymous users are capped at **3 requests per event** ([AppConstants.cs](api/Features/AppConstants.cs)) and tracked via a `cydjr.requestor` cookie.
 - Other users' names are obfuscated when viewing the request list anonymously; the dancer sees their own as "You".
 - Requests can be shared into the currently requestable event via a "Share Link" endpoint (used by the PWA share target).
@@ -44,7 +44,6 @@ The solution is deployed as a single [Azure Static Web App](https://learn.micros
 ### Backend ([api/](api/))
 - **.NET 8.0** with **Azure Functions V4** (isolated worker model)
 - **Azure AI Search** for all data persistence — three indexes: `events`, `requests`, `tracks` (plus a `ceroc-dj-synonyms` synonym map)
-- **Spotify Web API** for track metadata enrichment
 - **Application Insights** for host telemetry (requests, dependencies, exceptions)
 - **CsvHelper** for CSV ingestion of the track catalogue
 - DI configured in [Program.cs](api/Program.cs); repositories inherit a shared [BaseRepository](api/Features/Common/BaseRepository.cs) that builds the Azure Search client from configuration.
@@ -71,7 +70,6 @@ DjPortal/
 │   │   ├── Deployment/          GitHub Actions workflow_dispatch trigger
 │   │   ├── Events/              Event CRUD, .ics generation, tag rendering
 │   │   ├── Requests/            Music request domain (status, comparer, models)
-│   │   ├── Spotify/             Spotify track lookup
 │   │   ├── Tracks/              Azure Search-backed DJ track catalogue + CSV import
 │   │   └── Extensions/          Shared helpers (string obfuscation, etc.)
 │   ├── EventsFunction.cs        HTTP triggers — events
@@ -131,7 +129,6 @@ All routes are exposed under `/api/*` via the Static Web Apps proxy.
 |---|---|
 | `SearchServiceUri` | Azure AI Search endpoint URL |
 | `SearchServiceAdminApiKey` | Azure AI Search admin key |
-| `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` | Spotify Web API client credentials |
 | `APPINSIGHTS_INSTRUMENTATIONKEY` | Application Insights instrumentation key |
 | `GitHubToken` / `GitHubOwner` / `GitHubRepo` / `GitHubWorkflowFileName` | Required by `/api/deployment/rebuild` to call `workflow_dispatch` |
 

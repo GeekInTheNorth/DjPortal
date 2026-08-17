@@ -126,7 +126,7 @@ Call this tool when the user asks to:
 
 To call this tool, you need:
 - `eventId` — resolve the same way as `listMusicRequests` (call `listEvents` and match by name/date/venue if the user only names an event)
-- `musicRequest` — the track. Prefer "Title – Artist" format. If the user gives a Spotify URL, pass it through verbatim
+- `musicRequest` — the track. Prefer "Title – Artist" format. If the user gives a URL, pass it through verbatim — it is stored as a link and shown to the DJ as "Link: domain"
 - `requestedBy` — the user's display name. If you don't have it yet, ask once: "What name should I put on the request?"
 
 ### Before submitting

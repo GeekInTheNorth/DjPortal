@@ -12,7 +12,6 @@ DjPortal is a full-stack music request management system for DJ operations, buil
 - .NET 8.0 with Azure Functions V4 (isolated worker model)
 - Azure Search Service for data persistence (events, requests, tracks)
 - Application Insights for telemetry
-- Spotify API integration for track metadata
 - Dependency injection configured in [Program.cs](api/Program.cs)
 
 ### Frontend
@@ -85,8 +84,7 @@ api/
 │   │   ├── IEventService.cs
 │   │   └── EventService.cs           # Business logic
 │   ├── Requests/                      # Music request handling
-│   ├── Tracks/                        # Track data management
-│   └── Spotify/                       # Spotify API integration
+│   └── Tracks/                        # Track data management
 ├── EventsFunction.cs                  # HTTP trigger endpoints
 ├── RequestsFunction.cs
 ├── TracksFunction.cs
@@ -154,7 +152,6 @@ Configured in [src/staticwebapp.config.json](src/staticwebapp.config.json):
 **API Configuration** ([api/local.settings.json](api/local.settings.json)):
 - `SearchServiceUri`: Azure Search endpoint
 - `SearchServiceAdminApiKey`: Azure Search admin key
-- `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: Spotify API credentials
 - `APPINSIGHTS_INSTRUMENTATIONKEY`: Application Insights key
 
 **Frontend Environment** ([ui/.env](ui/.env)):

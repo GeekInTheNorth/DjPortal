@@ -16,7 +16,7 @@ public sealed class MusicRequest
 
     public string? TrackName { get; set; }
 
-    public string? SpotifyUrl { get; set; }
+    public string? LinkUrl { get; set; }
 
     public decimal BPM { get; set; }
 

@@ -122,7 +122,7 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
                     request.UserId,
                     request.UserName,
                     request.TrackName,
-                    request.SpotifyUrl,
+                    request.LinkUrl,
                     request.BPM,
                     request.Time,
                     request.IsFinalized,
@@ -153,7 +153,7 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
                 musicResquest.UserId,
                 musicResquest.UserName,
                 musicResquest.TrackName,
-                musicResquest.SpotifyUrl,
+                musicResquest.LinkUrl,
                 musicResquest.BPM,
                 musicResquest.Time,
                 musicResquest.IsFinalized,
@@ -188,7 +188,7 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
                         x.UserId,
                         x.UserName,
                         x.TrackName,
-                        x.SpotifyUrl,
+                        x.LinkUrl,
                         x.BPM,
                         x.Time,
                         x.IsFinalized,
@@ -223,7 +223,7 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
                 musicResquest.UserId,
                 musicResquest.UserName,
                 musicResquest.TrackName,
-                musicResquest.SpotifyUrl,
+                musicResquest.LinkUrl,
                 musicResquest.BPM,
                 musicResquest.Time,
                 musicResquest.IsFinalized,
@@ -247,7 +247,7 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
         var userNameField = new SearchableField(nameof(MusicRequest.UserName));
         var trackNameField = new SearchableField(nameof(MusicRequest.TrackName));
         var statusField = new SimpleField(nameof(MusicRequest.Status), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
-        var spotifyUrlField = new SimpleField(nameof(MusicRequest.SpotifyUrl), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
+        var linkUrlField = new SimpleField(nameof(MusicRequest.LinkUrl), SearchFieldDataType.String) { IsFilterable = true, IsSortable = true };
         var bpmField = new SimpleField(nameof(MusicRequest.BPM), SearchFieldDataType.Double);
         var timeField = new SimpleField(nameof(MusicRequest.Time), SearchFieldDataType.String);
         var IsFinalizedField = new SimpleField(nameof(MusicRequest.IsFinalized), SearchFieldDataType.Boolean) { IsFilterable = true };
@@ -262,7 +262,7 @@ public sealed class RequestRepository(IConfiguration configuration) : BaseReposi
                 userNameField, 
                 trackNameField, 
                 statusField, 
-                spotifyUrlField, 
+                linkUrlField, 
                 bpmField, 
                 timeField,
                 IsFinalizedField

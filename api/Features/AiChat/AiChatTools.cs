@@ -69,11 +69,11 @@ public sealed class AiChatTools(
 
             case "submit_request":
             {
-                var spotifyUrl = root.GetString("spotifyUrl");
+                var link = root.GetString("link");
                 var trackName = root.GetString("trackName");
                 var requestedBy = root.GetString("requestedBy");
 
-                if (string.IsNullOrWhiteSpace(trackName) && string.IsNullOrWhiteSpace(spotifyUrl))
+                if (string.IsNullOrWhiteSpace(trackName) && string.IsNullOrWhiteSpace(link))
                 {
                     return Result(new { success = false, error = "A track is required before submitting." });
                 }
@@ -87,8 +87,8 @@ public sealed class AiChatTools(
                 var model = new MusicRequestModel
                 {
                     EventId = eventDetails.Id.ToString(),
-                    // A Spotify URL takes precedence so the request pipeline can enrich the track name.
-                    MusicRequest = !string.IsNullOrWhiteSpace(spotifyUrl) ? spotifyUrl : trackName,
+                    // A pasted link takes precedence so the request pipeline records it as a link.
+                    MusicRequest = !string.IsNullOrWhiteSpace(link) ? link : trackName,
                     RequestedBy = requestedBy,
                     Bpm = root.GetDecimal("bpm"),
                     Time = root.GetString("time")
@@ -170,7 +170,7 @@ public sealed class AiChatTools(
                 "requestedBy": { "type": "string", "description": "The dancer's name if known; omit if they haven't given one." },
                 "bpm": { "type": "number", "description": "Optional beats per minute from a library result." },
                 "time": { "type": "string", "description": "Optional timing/length from a library result." },
-                "spotifyUrl": { "type": "string", "description": "A spotify track url ONLY if the dancer pasted one; otherwise omit." }
+                "link": { "type": "string", "description": "A track url ONLY if the dancer pasted one; otherwise omit." }
               },
               "required": ["trackName"]
             }

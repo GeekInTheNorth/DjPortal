@@ -266,7 +266,7 @@
           "trackName": {
             "type": "string"
           },
-          "spotifyUrl": {
+          "linkUrl": {
             "type": [
               "string",
               "null"
@@ -298,7 +298,7 @@
           },
           "musicRequest": {
             "type": "string",
-            "description": "The track to request — either a 'Title - Artist' style name, or a Spotify track URL"
+            "description": "The track to request — either a 'Title - Artist' style name, or a URL to the track"
           },
           "requestedBy": {
             "type": "string",

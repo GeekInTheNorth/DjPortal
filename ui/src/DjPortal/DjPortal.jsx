@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import DjRequestForm from './DjRequestForm.jsx';
 import EditRequestModal from './EditRequestModal.jsx';
 import AiChat from './../AiChat.jsx';
+import { getRequestLink } from './../requestLink.js';
 
 const DJ_GREETING = "Evening DJ Mark. Tell me what you need — a track someone's just asked for, or something to fill a gap in the set — and I'll dig it out.";
 
@@ -29,12 +30,13 @@ function DjPortal() {
 
     const renderRequestCollection = () => {
         return requestCollection && requestCollection.map((requestData) => {
-        const isSpotifyUrl = typeof requestData.spotifyUrl === 'string' && requestData.spotifyUrl.startsWith('https://open.spotify.com/track/');
+        const linkUrl = getRequestLink(requestData);
           return (
             <tr key={requestData.id}>
                 <td className='text-break'>
-                    {requestData.trackName}
-                    {isSpotifyUrl ? (<a href={requestData.spotifyUrl} className='spotify-link' target="_blank" rel="noopener noreferrer">Open in Spotify</a>) : ''}
+                    {linkUrl
+                        ? (<a href={linkUrl} className='request-link' target="_blank" rel="noopener noreferrer">{requestData.trackName}</a>)
+                        : requestData.trackName}
                 </td>
                 <td>
                     {requestData.userName}
