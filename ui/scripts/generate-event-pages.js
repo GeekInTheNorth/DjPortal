@@ -7,7 +7,8 @@ const __dirname = path.dirname(__filename);
 
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
 const EVENTS_DIR = path.resolve(DIST_DIR, 'events');
-const API_URL = 'https://dj.stott.pro/api/events/list/';
+const API_BASE_URL = process.env.EVENTS_API_URL || 'https://dj.stott.pro/api/events/list/';
+const API_URL = `${API_BASE_URL}?includeExpired=true`;
 const SITE_BASE_URL = 'https://dj.stott.pro';
 
 async function fetchEvents() {
@@ -157,10 +158,26 @@ function stripNewlines(text) {
 }
 
 function generateEventPageHtml(event, assetRefs) {
+    const isPast = event.isExpired;
     const formattedDate = formatDate(event.date);
     const dateFilename = formatDateForFilename(event.date);
     const pageTitle = `${event.name} - DJ Mark`;
     const pageDescription = stripNewlines(`${event.description || event.name} at ${event.locationName} on ${formattedDate}`);
+
+    // Past events keep their page so search engines get a clear "no longer index this"
+    // signal instead of a 404 or a redirect. They carry no event schema and no request app.
+    const robotsMeta = isPast ? '<meta name="robots" content="noindex, nofollow" />' : '';
+    const schemaScript = isPast
+        ? ''
+        : `<script type="application/ld+json">\n${buildSchemaJsonLd(event)}\n    </script>`;
+    const pastEventPanel = isPast
+        ? '<div class="alert alert-info" role="alert">This is a past event and exists for information purposes only</div>'
+        : '';
+    const requestApp = isPast ? '' : '<div id="eventpage"></div>';
+    const eventDataScript = isPast ? '' : `<script>window.__EVENT_DATA__ = ${escapeJsonForScript(event)};</script>`;
+    const bundleScript = !isPast && assetRefs.jsPath
+        ? `<script type="module" crossorigin src="${assetRefs.jsPath}"></script>`
+        : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -168,6 +185,7 @@ function generateEventPageHtml(event, assetRefs) {
     <meta charset="UTF-8">
     <title>${escapeHtml(pageTitle)}</title>
     <meta name="description" content="${escapeHtml(pageDescription)}" />
+    ${robotsMeta}
     <meta name="keywords" content="Modern Jive, Ceroc, Partner Dancing, Ceroc Yorkshire, ${escapeHtml(event.locationName)}, music requests, song requests, DJ requests" />
     <meta property="og:url" content="${SITE_BASE_URL}/events/${dateFilename}" />
     <meta property="og:title" content="${escapeHtml(pageTitle)}" />
@@ -191,9 +209,7 @@ function generateEventPageHtml(event, assetRefs) {
     <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
     ${assetRefs.cssPath ? `<link rel="stylesheet" crossorigin href="${assetRefs.cssPath}">` : ''}
-    <script type="application/ld+json">
-${buildSchemaJsonLd(event)}
-    </script>
+    ${schemaScript}
 </head>
 <body>
 
@@ -223,7 +239,8 @@ ${buildSchemaJsonLd(event)}
         </div>
     </div>
 
-    <div id="eventpage"></div>
+    ${pastEventPanel}
+    ${requestApp}
 </div>
 
 </main>
@@ -235,8 +252,8 @@ ${buildSchemaJsonLd(event)}
     </ul>
     <p class="text-center text-light">© 2026 Mark Stott</p>
 </footer>
-<script>window.__EVENT_DATA__ = ${escapeJsonForScript(event)};</script>
-${assetRefs.jsPath ? `<script type="module" crossorigin src="${assetRefs.jsPath}"></script>` : ''}
+${eventDataScript}
+${bundleScript}
 </body>
 </html>`;
 }
@@ -298,7 +315,9 @@ async function main() {
 
     console.log(`Assets: JS=${assetRefs.jsPath}, CSS=${assetRefs.cssPath}`);
 
-    // Fetch events from local API
+    // Fetch every event, including historic ones - they each keep a page. Only upcoming events
+    // belong in the sitemap and the homepage listing, and the API's isExpired flag decides which
+    // are which.
     let events;
     try {
         events = await fetchEvents();
@@ -313,7 +332,9 @@ async function main() {
         return;
     }
 
-    console.log(`Found ${events.length} event(s).`);
+    const upcomingEvents = events.filter(event => !event.isExpired);
+
+    console.log(`Found ${events.length} event(s), ${upcomingEvents.length} upcoming.`);
 
     // Create events directory
     if (!fs.existsSync(EVENTS_DIR)) {
@@ -322,38 +343,44 @@ async function main() {
 
     // Generate a page for each event
     let generated = 0;
+    let historic = 0;
     for (const event of events) {
         const dateFilename = formatDateForFilename(event.date);
         const outputPath = path.join(EVENTS_DIR, `${dateFilename}.html`);
         const html = generateEventPageHtml(event, assetRefs);
 
         fs.writeFileSync(outputPath, html, 'utf-8');
-        console.log(`  Generated: events/${dateFilename} - ${event.name}`);
+        console.log(`  Generated: events/${dateFilename}${event.isExpired ? ' (historic)' : ''} - ${event.name}`);
         generated++;
+        if (event.isExpired) historic++;
     }
 
-    console.log(`Done. Generated ${generated} event page(s).`);
+    console.log(`Done. Generated ${generated} event page(s) (${historic} historic).`);
 
-    // Generate sitemap.xml
-    const today = new Date().toISOString().split('T')[0];
-    const sitemapEntries = [
-        `  <url>\n    <loc>${SITE_BASE_URL}/</loc>\n    <lastmod>${today}</lastmod>\n  </url>`
+    // Generate sitemap.xml. lastmod is deliberately omitted - it is optional in the sitemap
+    // protocol, and a build-date stamp would misreport when each page actually changed.
+    // Historic events are excluded too - their pages carry a noindex instead.
+    // /contact is intentionally absent - it carries its own noindex.
+    const sitemapUrls = [
+        `${SITE_BASE_URL}/`,
+        `${SITE_BASE_URL}/faq`,
+        `${SITE_BASE_URL}/privacy`,
+        ...upcomingEvents.map(event => `${SITE_BASE_URL}/events/${formatDateForFilename(event.date)}`)
     ];
 
-    for (const event of events) {
-        const dateFilename = formatDateForFilename(event.date);
-        sitemapEntries.push(`  <url>\n    <loc>${SITE_BASE_URL}/events/${dateFilename}</loc>\n    <lastmod>${today}</lastmod>\n  </url>`);
-    }
-
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries.join('\n')}\n</urlset>\n`;
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapUrls.map(url => `  <url><loc>${url}</loc></url>`).join('\n')}
+</urlset>
+`;
 
     fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemap, 'utf-8');
-    console.log(`Generated sitemap.xml with ${sitemapEntries.length} URL(s).`);
+    console.log(`Generated sitemap.xml with ${sitemapUrls.length} URL(s).`);
 
     // Inject static event listings and CSS into index.html
     console.log('Injecting static content into index.html...');
 
-    const eventListHtml = generateEventListHtml(events);
+    const eventListHtml = generateEventListHtml(upcomingEvents);
 
     // Read the built index.html
     let indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf-8');

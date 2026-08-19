@@ -1,8 +1,4 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/admin.html", "/djportal.html", "/notfound.html", "/events/*.html", "*.{css,js,jpg,png,gif,svg,ico,xml}", "/api/*"]
-  },
   "routes": [
     {
       "route": "/djportal.html",
@@ -26,10 +22,6 @@
     },
     {
       "route": "/api/events/deleteall",
-      "allowedRoles": ["authenticated"]
-    },
-    {
-      "route": "/api/events/deleteexpired",
       "allowedRoles": ["authenticated"]
     },
     {

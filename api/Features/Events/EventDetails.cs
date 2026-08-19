@@ -51,6 +51,8 @@ public sealed class EventDetails : IEventDetailsData
     [JsonConverter(typeof(NullableBooleanJsonConverter))]
     public bool GenerateSchemaData { get; set; }
 
+    public bool IsExpired => Date < DateTime.UtcNow.Date;
+
     public string EventPageUrl => $"https://dj.stott.pro/events/{Date:yyyy-MM-dd}";
 
     public string CalendarInviteUrl => $"https://dj.stott.pro/api/events/getinvite/{Id}/dance-event.ics";

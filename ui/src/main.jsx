@@ -31,7 +31,7 @@ if (djPortalElement) {
 const djAdminElement = document.getElementById('djadmin');
 if (djAdminElement) {
     ReactDOM.createRoot(djAdminElement).render(
-        <AppProvider>
+        <AppProvider includeExpired>
             <AdminEventList />
             <AdminTools />
         </AppProvider>

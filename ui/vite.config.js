@@ -124,7 +124,8 @@ function eventPagesDevPlugin() {
 
         const dateStr = match[1];
         try {
-          const apiRes = await fetch('https://dj.stott.pro/api/events/list/');
+          // Historic events still have a page, so include expired events in the lookup.
+          const apiRes = await fetch('https://dj.stott.pro/api/events/list/?includeExpired=true');
           const events = await apiRes.json();
           const event = events.find(e => e.date && e.date.startsWith(dateStr));
 
@@ -134,12 +135,14 @@ function eventPagesDevPlugin() {
             return;
           }
 
+          const isPast = event.isExpired;
           const eventJson = JSON.stringify(event).replace(/<\//g, '<\\/');
           const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>${event.name} - DJ Mark</title>
+    ${isPast ? '<meta name="robots" content="noindex, nofollow" />' : ''}
     <meta name="viewport" content="maximum-scale=5.0, initial-scale=1.0, width=device-width">
     <meta name="theme-color" content="#212529">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
@@ -163,10 +166,11 @@ function eventPagesDevPlugin() {
             <p class="card-text">${event.locationName || ''}<br/>${event.locationAddress || ''}</p>
         </div>
     </div>
-    <div id="eventpage"></div>
+    ${isPast ? '<div class="alert alert-info" role="alert">This is a past event and exists for information purposes only</div>' : ''}
+    ${isPast ? '' : '<div id="eventpage"></div>'}
 </div>
 </main>
-<script>window.__EVENT_DATA__ = ${eventJson};</script>
+${isPast ? '' : `<script>window.__EVENT_DATA__ = ${eventJson};</script>`}
 <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>`;
@@ -198,6 +202,7 @@ export default defineConfig({
         privacy: resolve(__dirname, 'privacy.html'),
         faq: resolve(__dirname, 'faq.html'),
         contact: resolve(__dirname, 'contact.html'),
+        notfound: resolve(__dirname, 'notfound.html'),
       },
       output: {
         assetFileNames: 'static/[name]-[hash][extname]',

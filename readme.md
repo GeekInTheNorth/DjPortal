@@ -104,14 +104,13 @@ All routes are exposed under `/api/*` via the Static Web Apps proxy.
 
 | Route | Methods | Auth | Purpose |
 |---|---|---|---|
-| `/api/events/list` | GET | Anonymous | Upcoming, non-cancelled events |
+| `/api/events/list` | GET | Anonymous | Upcoming, non-cancelled events. `?includeExpired=true` returns past events as well |
 | `/api/events/byid/{id}` | GET | Anonymous | Single event |
 | `/api/events/getinvite/{id}/dance-event.ics` | GET | Anonymous | Calendar invite |
 | `/api/events/create` | POST | Authenticated | Create event |
 | `/api/events/update` | POST | Authenticated | Update event |
 | `/api/events/delete` | DELETE | Authenticated | Delete event by id |
 | `/api/events/deleteall` | DELETE | Authenticated | Drop & recreate events index |
-| `/api/events/deleteexpired` | DELETE | Authenticated | Remove past events |
 | `/api/events/deletecache` | DELETE | Authenticated | Purge in-memory event cache |
 | `/api/musicrequest/list` | GET | Anonymous | List requests for an event (names obfuscated for non-DJ users) |
 | `/api/musicrequest/create` | POST | Anonymous | Submit a request (rate-limited by cookie) |

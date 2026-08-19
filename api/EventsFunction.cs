@@ -19,7 +19,9 @@ public class EventsFunction(IEventService eventService) : BaseFunction
     [Function("GetEvents")]
     public async Task<HttpResponseData> GetEvents([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "events/list")] HttpRequestData req)
     {
-        var model = await eventService.List(DateTime.Today.AddDays(-7));
+        var includeExpired = bool.TryParse(req.Query["includeExpired"], out var flag) && flag;
+
+        var model = await eventService.List(includeExpired);
         model = model.Where(x => !x.IsCancelled).OrderBy(x => x.Date).ToList();
 
         return await CreateResponseAsync(req, HttpStatusCode.OK, model);
@@ -119,18 +121,6 @@ public class EventsFunction(IEventService eventService) : BaseFunction
         if (authResponse != null) return authResponse;
 
         await eventService.UpdateEventIndex();
-
-        return CreateEmptyResponse(req);
-    }
-
-    [Function("DeleteExpiredEvents")]
-    public async Task<HttpResponseData> DeleteExpiredEvents([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "events/deleteexpired")] HttpRequestData req)
-    {
-        // Check if user is authenticated
-        var authResponse = RequireAuthentication(req, out var _);
-        if (authResponse != null) return authResponse;
-
-        await eventService.DeleteExpiredEvents();
 
         return CreateEmptyResponse(req);
     }

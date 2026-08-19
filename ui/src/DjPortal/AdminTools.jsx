@@ -2,7 +2,6 @@ import {} from 'react'
 import { Card } from 'react-bootstrap';
 import CreateEventModal from './CreateEventModal.jsx';
 import DeleteAllRequests from './DeleteAllRequests.jsx';
-import DeleteExpiredEvents from './DeleteExpiredEvents.jsx';
 import DeleteCache from './DeleteCache.jsx';
 import UpdateEventIndex from './UpdateEventIndex.jsx';
 import UploadTrackList from './UploadTrackList.jsx';
@@ -17,7 +16,6 @@ function AdminTools() {
                 <CreateEventModal />
                 <DeleteCache />
                 <UpdateEventIndex />
-                <DeleteExpiredEvents />
                 <DeleteAllRequests />
                 <UploadTrackList />
                 <TriggerRebuild />

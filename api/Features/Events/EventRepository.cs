@@ -74,19 +74,37 @@ public sealed class EventRepository(IConfiguration configuration) : BaseReposito
 
         try
         {
-            var searchOptions = new SearchOptions
-            { 
-                OrderBy = { $"{nameof(EventDetails.Date)} asc" },
-                Size = 100
-            };
+            const int pageSize = 500;
 
-            var searchRequest = await searchClient.SearchAsync<EventDetails>(string.Empty, searchOptions);
+            var searchResults = new List<EventDetails>();
+            var skip = 0;
 
-            var searchResults = searchRequest.Value.GetResults().Select(x => x.Document).ToList();; 
+            while (true)
+            {
+                var searchOptions = new SearchOptions
+                {
+                    OrderBy = { $"{nameof(EventDetails.Date)} asc" },
+                    Size = pageSize,
+                    Skip = skip
+                };
+
+                var searchRequest = await searchClient.SearchAsync<EventDetails>(string.Empty, searchOptions);
+
+                var page = searchRequest.Value.GetResults().Select(x => x.Document).ToList();
+                searchResults.AddRange(page);
+
+                if (page.Count < pageSize)
+                {
+                    break;
+                }
+
+                skip += pageSize;
+            }
+
             if (searchResults is { Count: >0 })
             {
                 return searchResults;
-            }    
+            }
         }
         catch
         {

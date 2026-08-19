@@ -29,19 +29,6 @@ public sealed class EventService(
         cache.Remove(CacheKey);
     }
 
-    public async Task DeleteExpiredEvents()
-    {
-        var allEvents = await GetCachedEventList();
-        var expiredEvents = allEvents.Where(x => x.Date < DateTime.UtcNow).ToList();
-        foreach (var expiredEvent in expiredEvents)
-        {
-            await eventRepository.Delete(expiredEvent.Id);
-            // await requestRepository.DeleteAll(expiredEvent.Id);
-        }
-        
-        cache.Remove(CacheKey);
-    }
-
     public async Task DeleteAndCreateEventIndex()
     {
         await eventRepository.DeleteAndCreateEventIndex();
@@ -61,11 +48,11 @@ public sealed class EventService(
         return cachedEvents.FirstOrDefault(x => x.Id == id);
     }
 
-    public async Task<IList<EventDetails>> List(DateTime oldestDate, int size = 100)
+    public async Task<IList<EventDetails>> List(bool includeExpired = false)
     {
         var cachedEvents = await GetCachedEventList();
 
-        return GetFilteredList(cachedEvents, oldestDate, size);
+        return GetFilteredList(cachedEvents, includeExpired);
     }
 
     public void PurgeCache()
@@ -89,14 +76,13 @@ public sealed class EventService(
         return events;
     }
 
-    private static List<EventDetails> GetFilteredList(IList<EventDetails>? events, DateTime oldestDate, int size = 100)
+    private static List<EventDetails> GetFilteredList(IList<EventDetails>? events, bool includeExpired)
     {
         var eventsToFilter = events ?? [];
 
         return eventsToFilter
-            .Where(x => x.Date >= oldestDate)
+            .Where(x => includeExpired || !x.IsExpired)
             .OrderBy(x => x.Date)
-            .Take(size)
             .ToList();
     }
 }

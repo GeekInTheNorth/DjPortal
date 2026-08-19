@@ -12,11 +12,9 @@ public interface IEventService
 
     Task UpdateEventIndex();
 
-    Task DeleteExpiredEvents();
-
     Task<EventDetails?> Get(Guid id);
 
-    Task<IList<EventDetails>> List(DateTime oldestDate, int size = 100);
+    Task<IList<EventDetails>> List(bool includeExpired = false);
 
     void PurgeCache();
 }

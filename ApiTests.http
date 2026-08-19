@@ -6,6 +6,10 @@
 
 GET {{rooturl}}/api/events/list
 
+### Get Events Including Expired
+
+GET {{rooturl}}/api/events/list?includeExpired=true
+
 ### Options Events
 
 OPTIONS {{rooturl}}/api/events/list

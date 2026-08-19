@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export const AppContext = createContext();
 
-export const AppProvider = ({ children }) => {
+export const AppProvider = ({ children, includeExpired = false }) => {
 
     const [eventCollection, setEventCollection] = useState([]);
     const [requestCollection, setRequestCollection] = useState([]);
@@ -15,7 +15,11 @@ export const AppProvider = ({ children }) => {
     const getEventCollection = async () => {
         setEventCollection([]);
         
-        await axios.get(import.meta.env.VITE_APP_EVENTS_LIST)
+        const eventListUrl = includeExpired
+            ? `${import.meta.env.VITE_APP_EVENTS_LIST}?includeExpired=true`
+            : import.meta.env.VITE_APP_EVENTS_LIST;
+
+        await axios.get(eventListUrl)
             .then((response) => {
                 if (response.data && Array.isArray(response.data)){
                     setEventCollection(response.data);
@@ -68,4 +72,5 @@ export const AppProvider = ({ children }) => {
 
 AppProvider.propTypes = {
     children: PropTypes.node.isRequired,
+    includeExpired: PropTypes.bool,
 };
