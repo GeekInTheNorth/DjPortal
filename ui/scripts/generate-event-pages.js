@@ -129,6 +129,7 @@ function buildSchemaJsonLd(event) {
         "@type": "DanceEvent",
         "name": event.name,
         "description": event.description,
+        "image": event.imageUrl || `${SITE_BASE_URL}/images/social.png`,
         "startDate": event.startTime || `${dateStr}T20:00:00`,
         "endDate": event.endTime || `${dateStr}T23:00:00`,
         "eventStatus": "https://schema.org/EventScheduled",

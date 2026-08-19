@@ -74,13 +74,12 @@ public sealed class EventDetails : IEventDetailsData
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(Name)) return "/images/banner.png";
-            if (Name.Contains("energise", StringComparison.OrdinalIgnoreCase)) return "/images/energise.jpg";
-            if (Name.Contains("january", StringComparison.OrdinalIgnoreCase)) return "/images/january.png";
-            if (Name.Contains("february", StringComparison.OrdinalIgnoreCase)) return "/images/february.png";
-            if (Name.Contains("spooktacular", StringComparison.OrdinalIgnoreCase)) return "/images/spooktacular.jpg";
+            if (string.IsNullOrWhiteSpace(Name)) return "https://dj.stott.pro/images/social.png";
+            if (Name.Contains("energise", StringComparison.OrdinalIgnoreCase)) return "https://dj.stott.pro/images/energise.jpg";
+            if (Name.Contains("tadcaster", StringComparison.OrdinalIgnoreCase)) return "https://dj.stott.pro/images/tadcaster-freestyle.jpeg";
+            if (Name.Contains("moortown", StringComparison.OrdinalIgnoreCase)) return "https://dj.stott.pro/images/moortown-freestyle.jpeg";
 
-            return "/images/banner.png";
+            return "https://dj.stott.pro/images/social.png";
         }
     }
 
