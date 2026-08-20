@@ -5,7 +5,7 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import './AiChat.css';
 
-const DANCER_GREETING = "Hi! I'm DJ Mark's assistant. Tell me what you fancy hearing — an artist, a song, or just a vibe — and I'll help you request it.";
+const DANCER_GREETING = "Hi! I'm DJ Mark's AI Assistant. Tell me what you fancy hearing — an artist, a song, or just a vibe — and I'll help you request it.";
 
 const DANCER_OPTIONS = ["I want a specific song", "I want anything by a specific artist", "I want a specific genre or decade", "I don't know the name, but the lyrics go..."];
 
