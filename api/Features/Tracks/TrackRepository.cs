@@ -52,6 +52,7 @@ public sealed class TrackRepository(IConfiguration configuration) : BaseReposito
             "B*witched,bewitched",
             "B-52s,B52s,B-52,B52",
             "Rag'N'Bone,ragnbone,Rag and bone,rag & bone,rag n bone",
+            "Cherry,Cheri"
         };
         var synonymList = string.Join("\n", synonyms);
         var synonymMap = new SynonymMap(AppConstants.SynonymMapName, synonymList);
