@@ -121,6 +121,26 @@ function buildOrganizer(event) {
     };
 }
 
+function buildPostalAddress(event) {
+    // The API splits locationAddress into the schema.org PostalAddress fields. Until a build runs
+    // against an API that sends them, fall back to the whole address as the street address.
+    if (!event.streetAddress) {
+        return {
+            "@type": "PostalAddress",
+            "streetAddress": event.locationAddress
+        };
+    }
+
+    const address = { "@type": "PostalAddress" };
+    for (const field of ['streetAddress', 'addressLocality', 'postalCode', 'addressCountry']) {
+        if (event[field]) {
+            address[field] = event[field];
+        }
+    }
+
+    return address;
+}
+
 function buildSchemaJsonLd(event) {
     const dateStr = formatDateISO(event.date);
 
@@ -137,10 +157,7 @@ function buildSchemaJsonLd(event) {
         "location": {
             "@type": "Place",
             "name": event.locationName,
-            "address": {
-                "@type": "PostalAddress",
-                "streetAddress": event.locationAddress
-            }
+            "address": buildPostalAddress(event)
         },
         "organizer": buildOrganizer(event),
         "performer": {
@@ -162,8 +179,10 @@ function generateEventPageHtml(event, assetRefs) {
     const isPast = event.isExpired;
     const formattedDate = formatDate(event.date);
     const dateFilename = formatDateForFilename(event.date);
-    const pageTitle = `${event.name} - DJ Mark`;
-    const pageDescription = stripNewlines(`${event.description || event.name} at ${event.locationName} on ${formattedDate}`);
+    // The API builds the meta title and description. The fallbacks only cover a build that runs
+    // against an API which doesn't send them yet.
+    const pageTitle = stripNewlines(event.metaTitle || `${event.name} - DJ Mark`);
+    const pageDescription = stripNewlines(event.metaDescription || `${event.description || event.name} at ${event.locationName} on ${formattedDate}`);
 
     // Past events keep their page so search engines get a clear "no longer index this"
     // signal instead of a 404 or a redirect. They carry no event schema and no request app.

@@ -1,11 +1,15 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using DjPortalApi.Features.Extensions;
 
 namespace DjPortalApi.Features.Events;
 
-public sealed class EventDetails : IEventDetailsData
+public sealed partial class EventDetails : IEventDetailsData
 {
+    private const string DefaultOrganiser = "DJ Mark";
+
     private DateTime? _startTime;
 
     private DateTime? _endTime;
@@ -42,6 +46,17 @@ public sealed class EventDetails : IEventDetailsData
 
     public string? LocationAddress { get; set; }
 
+    // The address parts below are derived from LocationAddress rather than stored, and are named after
+    // the schema.org PostalAddress fields so the event page generator can map them straight across.
+    public string? StreetAddress => ParseAddress().Street;
+
+    public string? AddressLocality => ParseAddress().Locality;
+
+    public string? PostalCode => ParseAddress().PostalCode;
+
+    // ISO 3166-1 alpha-2, which is what Google's structured data expects. Every event is in the UK.
+    public string AddressCountry => "GB";
+
     [JsonConverter(typeof(NullableBooleanJsonConverter))]
     public bool IsRequestable { get; set; }
 
@@ -69,6 +84,18 @@ public sealed class EventDetails : IEventDetailsData
     public string? Organizer { get; set; }
 
     public IEnumerable<EventDetailTag> TagList => GetTags();
+
+    public IEnumerable<string> Djs => TagList
+        .Where(x => x.Name.StartsWith("DJ", StringComparison.OrdinalIgnoreCase))
+        .Select(x => x.Name);
+
+    public string MetaTitle => $"{Name} | {DisplayDate} | {OrganiserName}";
+
+    public string MetaDescription => BuildMetaDescription();
+
+    private string DisplayDate => Date.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture);
+
+    private string OrganiserName => string.IsNullOrWhiteSpace(Organizer) ? DefaultOrganiser : Organizer.Trim();
 
     public string ImageUrl
     {
@@ -137,4 +164,69 @@ public sealed class EventDetails : IEventDetailsData
 
         return "primary";
     }
+
+    private string BuildMetaDescription()
+    {
+        var description = $"{DisplayDate}: Ceroc dancing at {LocationName}, hosted by {OrganiserName}.";
+        var djs = Djs.ToList();
+
+        return djs.Count == 0 ? description : $"{description} Music by {JoinNames(djs)}.";
+    }
+
+    /// <summary>
+    /// Joins names as a UK English list without an Oxford comma: "A", "A and B", "A, B and C".
+    /// </summary>
+    private static string JoinNames(IReadOnlyList<string> names) => names.Count switch
+    {
+        0 => string.Empty,
+        1 => names[0],
+        _ => $"{string.Join(", ", names.Take(names.Count - 1))} and {names[^1]}"
+    };
+
+    /// <summary>
+    /// Splits LocationAddress (e.g. "Westgate, Tadcaster, LS24 9AB") by comma. The postcode is found by
+    /// pattern rather than position, then the first remaining part is the street and the last is the
+    /// locality. Anything between them is kept with the street so no part of the address is lost.
+    /// </summary>
+    private ParsedAddress ParseAddress()
+    {
+        var parts = LocationAddress.SplitByComma();
+        string? postalCode = null;
+
+        for (var i = 0; i < parts.Count; i++)
+        {
+            var match = UkPostcode().Match(parts[i]);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            postalCode = match.Value.ToUpperInvariant();
+
+            // The postcode may share a segment with the town (e.g. "Leeds LS17 6AA"), so keep whatever is left.
+            var remainder = parts[i].Remove(match.Index, match.Length).Trim();
+            if (string.IsNullOrEmpty(remainder))
+            {
+                parts.RemoveAt(i);
+            }
+            else
+            {
+                parts[i] = remainder;
+            }
+
+            break;
+        }
+
+        return parts.Count switch
+        {
+            0 => new ParsedAddress(null, null, postalCode),
+            1 => new ParsedAddress(parts[0], null, postalCode),
+            _ => new ParsedAddress(string.Join(", ", parts.Take(parts.Count - 1)), parts[^1], postalCode)
+        };
+    }
+
+    [GeneratedRegex(@"\b(?:GIR ?0AA|[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2})\b", RegexOptions.IgnoreCase)]
+    private static partial Regex UkPostcode();
+
+    private readonly record struct ParsedAddress(string? Street, string? Locality, string? PostalCode);
 }
