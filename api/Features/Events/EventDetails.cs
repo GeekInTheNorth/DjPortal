@@ -85,9 +85,19 @@ public sealed partial class EventDetails : IEventDetailsData
 
     public IEnumerable<EventDetailTag> TagList => GetTags();
 
-    public IEnumerable<string> Djs => TagList
-        .Where(x => x.Name.StartsWith("DJ", StringComparison.OrdinalIgnoreCase))
-        .Select(x => x.Name);
+    public IEnumerable<string> Djs
+    {
+        get
+        {
+            var djs = TagList.Where(x => x.Name.StartsWith("DJ", StringComparison.OrdinalIgnoreCase)).Select(x => x.Name);
+            if (!djs.Any())
+            {
+                return [DefaultOrganiser];
+            }
+
+            return djs;
+        }
+    }
 
     public string MetaTitle => $"{Name} | {DisplayDate} | {OrganiserName}";
 
@@ -165,13 +175,8 @@ public sealed partial class EventDetails : IEventDetailsData
         return "primary";
     }
 
-    private string BuildMetaDescription()
-    {
-        var description = $"{DisplayDate}: Ceroc dancing at {LocationName}, hosted by {OrganiserName}.";
-        var djs = Djs.ToList();
-
-        return djs.Count == 0 ? description : $"{description} Music by {JoinNames(djs)}.";
-    }
+    private string BuildMetaDescription() =>
+        $"{DisplayDate}: Ceroc dancing at {LocationName}, hosted by {OrganiserName}. Music by {JoinNames([.. Djs])}.";
 
     /// <summary>
     /// Joins names as a UK English list without an Oxford comma: "A", "A and B", "A, B and C".

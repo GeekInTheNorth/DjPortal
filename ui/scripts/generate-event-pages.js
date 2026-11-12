@@ -52,13 +52,6 @@ function formatDateISO(dateString) {
     return date.toISOString().split('T')[0];
 }
 
-function getTagColour(tag) {
-    const lowerTag = tag.toLowerCase();
-    if (lowerTag === 'dj mark') return 'success';
-    if (lowerTag.startsWith('valentine') || lowerTag.endsWith('ball')) return 'danger';
-    return 'primary';
-}
-
 function renderTags(event) {
     if (!event.tagList || event.tagList.length === 0) return '';
 
@@ -121,6 +114,12 @@ function buildOrganizer(event) {
     };
 }
 
+function buildPerformer(event) {
+    // The API always sends at least one DJ, falling back to DJ Mark when no DJ tag is set.
+    const performers = (event.djs ?? []).map(name => ({ "@type": "Person", "name": name }));
+    return performers.length === 1 ? performers[0] : performers;
+}
+
 function buildPostalAddress(event) {
     // The API splits locationAddress into the schema.org PostalAddress fields. Until a build runs
     // against an API that sends them, fall back to the whole address as the street address.
@@ -160,10 +159,7 @@ function buildSchemaJsonLd(event) {
             "address": buildPostalAddress(event)
         },
         "organizer": buildOrganizer(event),
-        "performer": {
-            "@type": "Person",
-            "name": "DJ Mark"
-        },
+        "performer": buildPerformer(event),
         "url": `${SITE_BASE_URL}/events/${formatDateForFilename(event.date)}`
     };
 
