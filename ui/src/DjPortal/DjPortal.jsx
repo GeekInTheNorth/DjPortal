@@ -6,6 +6,7 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import DjRequestForm from './DjRequestForm.jsx';
 import EditRequestModal from './EditRequestModal.jsx';
+import DeleteRequestModal from './DeleteRequestModal.jsx';
 import AiChat from './../AiChat.jsx';
 import { getRequestLink } from './../requestLink.js';
 
@@ -16,17 +17,9 @@ const DJ_OPTIONS = ["Suggest something to play next", "Find me a floor-filler ar
 function DjPortal() {
 
     const { eventCollection, selectedEvent, requestCollection, selectEvent, getMusicRequests } = useContext(AppContext);
-    const [allowDelete, setAllowDelete] = useState(false);
-    const [allowEdits, setAllowEdits] = useState(false);
+    const [allowManage, setAllowManage] = useState(false);
     const [editRequest, setEditRequest] = useState(null);
-
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            reloadRequests();
-        }, 60000);
-
-        return () => clearInterval(intervalId);
-    });
+    const [deleteRequest, setDeleteRequest] = useState(null);
 
     const renderRequestCollection = () => {
         return requestCollection && requestCollection.map((requestData) => {
@@ -44,13 +37,13 @@ function DjPortal() {
                 </td>
                 <td>{requestData.timing}</td>
                 <td>{requestData.status}</td>
-                <td>
+                <td className='text-end'>
                     {requestData.status === 'Pending' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Approved')}>Approve</button>}
                     {requestData.status === 'Approved' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Queued')}>Queue</button>}
                     {requestData.status === 'Queued' && <button className='btn btn-primary' onClick={() => handleRequestStateChange(requestData.id, 'Played')}>Played</button>}
-                    {requestData.status !== 'Pending' && <button className='btn btn-danger mx-3' onClick={() => handleRequestStateChange(requestData.id, 'Pending')}>Reset</button>}
-                    {allowEdits && <button className='btn btn-secondary mx-3' onClick={() => setEditRequest(requestData)}>Edit</button>}
-                    {allowDelete && <button className='btn btn-danger mx-3' onClick={() => handleDeleteRequest(requestData.id)}>Delete</button>}
+                    {requestData.status !== 'Pending' && <button className='btn btn-danger ms-3' onClick={() => handleRequestStateChange(requestData.id, 'Pending')}>Reset</button>}
+                    {allowManage && <button className='btn btn-secondary ms-3' onClick={() => setEditRequest(requestData)}>Edit</button>}
+                    {allowManage && <button className='btn btn-danger ms-3' onClick={() => setDeleteRequest(requestData)}>Delete</button>}
                 </td>
             </tr>
           )}
@@ -99,14 +92,13 @@ function DjPortal() {
         }
     }
 
-    const handleDeleteRequest = async (requestId) => {
-        try {
-            await axios.delete(import.meta.env.VITE_APP_REQUESTS_DELETE, { params: { requestId: requestId } });
-            await getMusicRequests(selectedEvent);
-        } catch (error) {
-            console.error('Error deleting request', error);
-        }
-    }
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            reloadRequests();
+        }, 60000);
+
+        return () => clearInterval(intervalId);
+    });
 
     return (
         <>
@@ -122,15 +114,9 @@ function DjPortal() {
                 <div className='my-3'>
                     <Form.Check
                         type='checkbox'
-                        label='Allow Deleting Requests'
-                        checked={allowDelete}
-                        onChange={(e) => setAllowDelete(e.target.checked)}
-                    />
-                    <Form.Check
-                        type='checkbox'
-                        label='Allow Edits'
-                        checked={allowEdits}
-                        onChange={(e) => setAllowEdits(e.target.checked)}
+                        label='Allow Edits & Deletes'
+                        checked={allowManage}
+                        onChange={(e) => setAllowManage(e.target.checked)}
                     />
                 </div>
                 <table className='table table-striped'>
@@ -140,7 +126,7 @@ function DjPortal() {
                             <th>Requested By</th>
                             <th>Timing</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th className='text-end'>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,6 +140,12 @@ function DjPortal() {
             requestData={editRequest}
             onHide={() => setEditRequest(null)}
             onSaved={() => getMusicRequests(selectedEvent)}
+        />
+        <DeleteRequestModal
+            show={deleteRequest !== null}
+            requestData={deleteRequest}
+            onHide={() => setDeleteRequest(null)}
+            onDeleted={() => getMusicRequests(selectedEvent)}
         />
         <Tabs defaultActiveKey='form' className='mt-3 request-tabs' fill>
             <Tab eventKey='form' title='Request a Track'>
