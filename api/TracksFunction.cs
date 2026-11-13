@@ -24,7 +24,7 @@ public class TracksFunction(ITrackRepository trackRepository) : BaseFunction
     {
         var query = req.Query["query"];
         var lowBpm = ParseBpm(req.Query["lowBpm"], 100m);
-        var highBpm = ParseBpm(req.Query["highBpm"], 145m);
+        var highBpm = ParseBpm(req.Query["highBpm"], 150m);
 
         var tracks = await trackRepository.ListAsync(query, lowBpm, highBpm);
 
