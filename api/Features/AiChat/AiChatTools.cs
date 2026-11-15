@@ -14,18 +14,12 @@ public sealed class AiChatTools(
     IWebSearchService webSearchService,
     IRequestService requestService) : IAiChatTools
 {
-    // present_options does no work — AiChatService intercepts it to pull out the quick-replies — but the
-    // model still needs to see it in the tool list.
-    public const string PresentOptionsToolName = "present_options";
-
-    public const string PresentOptionsResult =
-        "{\"shown\":true,\"note\":\"The options are now visible to the dancer as tappable buttons. Your reply text must NOT list, number or repeat them.\"}";
-
     // Web search snippets are enough to identify a track at this length; anything longer is mostly
     // verbatim page content going straight back through the content filter.
     private const int MaxSnippetLength = 300;
 
-    public IReadOnlyList<ChatTool> GetTools() => [SearchTracksTool, WebSearchTool, SubmitRequestTool, PresentOptionsTool];
+    // Quick-reply buttons are not a tool: they are a field of the structured reply (see AiChatService.ReplyFormat).
+    public IReadOnlyList<ChatTool> GetTools() => [SearchTracksTool, WebSearchTool, SubmitRequestTool];
 
     public async Task<AiChatToolResult> ExecuteToolAsync(
         ChatToolCall toolCall,
@@ -126,23 +120,6 @@ public sealed class AiChatTools(
                 "highBpm": { "type": "number", "description": "Optional maximum beats per minute." }
               },
               "required": ["query"]
-            }
-            """));
-
-    private static readonly ChatTool PresentOptionsTool = ChatTool.CreateFunctionTool(
-        PresentOptionsToolName,
-        "Show the dancer tappable quick-reply buttons so they don't have to type. Call this whenever your message asks them to choose — track shortlists, or confirmations. Provide 2 to 5 short options. The labels are rendered as buttons, so your accompanying message must not repeat them.",
-        BinaryData.FromString("""
-            {
-              "type": "object",
-              "properties": {
-                "options": {
-                  "type": "array",
-                  "items": { "type": "string" },
-                  "description": "2-5 short button labels, each a natural reply the dancer might tap, e.g. 'Light Up - Kylie Minogue', 'Yes, request it' or 'Show me others'."
-                }
-              },
-              "required": ["options"]
             }
             """));
 

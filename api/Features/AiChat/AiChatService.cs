@@ -26,6 +26,35 @@ public sealed partial class AiChatService : IAiChatService
     // Only the most recent chat entries are sent to the model to cap token growth.
     private const int MaxHistoryMessages = 20;
 
+    private const string SubmittedReply = "Your request has been submitted to DJ Mark.";
+
+    private const string CouldNotFinishReply = "Sorry, I couldn't finish that. Please try again, or use the standard request form below.";
+
+    // The final message of every turn is held to this schema, so the quick-replies arrive in the same message
+    // as the text. They used to come from a separate present_options tool call, which the model could skip
+    // while still writing the "here are a few:" lead-in that promised them.
+    private static readonly ChatResponseFormat ReplyFormat = ChatResponseFormat.CreateJsonSchemaFormat(
+        "chat_reply",
+        BinaryData.FromString("""
+            {
+              "type": "object",
+              "properties": {
+                "reply": {
+                  "type": "string",
+                  "description": "The message they read, as plain text. Never lists or repeats the options."
+                },
+                "options": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Tappable quick-reply buttons, each exactly what they would reply, e.g. 'Light Up - Kylie Minogue', 'Yes, request it' or 'Show me others'. 2 to 5 whenever the reply asks them to choose; empty otherwise."
+                }
+              },
+              "required": ["reply", "options"],
+              "additionalProperties": false
+            }
+            """),
+        jsonSchemaIsStrict: true);
+
     // The chat bubbles render plain text, so any Markdown the model emits would show as raw punctuation.
     [GeneratedRegex(@"\[([^\]\n]+)\]\((https?://[^\s)]+)\)")]
     private static partial Regex MarkdownLink();
@@ -96,14 +125,13 @@ public sealed partial class AiChatService : IAiChatService
             }
         }
 
-        var options = new ChatCompletionOptions();
+        var options = new ChatCompletionOptions { ResponseFormat = ReplyFormat };
         foreach (var tool in _tools.GetTools())
         {
             options.Tools.Add(tool);
         }
 
         var requestSubmitted = false;
-        List<string>? quickReplies = null;
 
         for (var iteration = 0; iteration < MaxToolIterations; iteration++)
         {
@@ -139,14 +167,6 @@ public sealed partial class AiChatService : IAiChatService
                 messages.Add(new AssistantChatMessage(completion));
                 foreach (var toolCall in completion.ToolCalls)
                 {
-                    // present_options only carries UI quick-replies back to the caller; it does no work.
-                    if (string.Equals(toolCall.FunctionName, AiChatTools.PresentOptionsToolName, StringComparison.Ordinal))
-                    {
-                        quickReplies = ParseOptions(toolCall);
-                        messages.Add(new ToolChatMessage(toolCall.Id, AiChatTools.PresentOptionsResult));
-                        continue;
-                    }
-
                     var result = await _tools.ExecuteToolAsync(toolCall, eventDetails, userId, isAuthenticated, knownName);
                     requestSubmitted = requestSubmitted || result.RequestSubmitted;
                     messages.Add(new ToolChatMessage(toolCall.Id, result.ResultJson));
@@ -155,16 +175,36 @@ public sealed partial class AiChatService : IAiChatService
                 continue;
             }
 
-            var reply = completion.Content.Count > 0 ? completion.Content[0].Text : string.Empty;
-            return new AiChatResponse { Reply = StripMarkdown(reply), RequestSubmitted = requestSubmitted, Options = quickReplies };
+            return BuildReply(completion, mode, requestSubmitted);
         }
 
         return new AiChatResponse
         {
-            Reply = requestSubmitted ? "Your request has been submitted to DJ Mark." : "Sorry, I couldn't finish that. Please try again, or use the standard request form below.",
-            RequestSubmitted = requestSubmitted,
-            Options = quickReplies
+            Reply = requestSubmitted ? SubmittedReply : CouldNotFinishReply,
+            RequestSubmitted = requestSubmitted
         };
+    }
+
+    private AiChatResponse BuildReply(ChatCompletion completion, AiChatMode mode, bool requestSubmitted)
+    {
+        var text = completion.Content.Count > 0 ? completion.Content[0].Text : string.Empty;
+
+        if (TryParseReply(text, out var reply, out var quickReplies))
+        {
+            return new AiChatResponse { Reply = reply, RequestSubmitted = requestSubmitted, Options = quickReplies };
+        }
+
+        // A refusal, a reply cut off at the token limit, or the model ignoring the format. Plain text is still
+        // worth passing on, but half a JSON object never is.
+        _logger.LogWarning(
+            "The AI chat reply did not match the expected format. Mode: {Mode}, finish reason: {FinishReason}, refused: {Refused}.",
+            mode, completion.FinishReason, !string.IsNullOrWhiteSpace(completion.Refusal));
+
+        var fallback = !string.IsNullOrWhiteSpace(completion.Refusal) ? completion.Refusal
+            : !string.IsNullOrWhiteSpace(text) && !text.TrimStart().StartsWith('{') ? text
+            : requestSubmitted ? SubmittedReply : CouldNotFinishReply;
+
+        return new AiChatResponse { Reply = StripMarkdown(fallback), RequestSubmitted = requestSubmitted };
     }
 
     // Iteration 0 means the payload was the system prompt plus the client's own history, so the message
@@ -312,11 +352,31 @@ public sealed partial class AiChatService : IAiChatService
         return text.Trim();
     }
 
-    private static List<string>? ParseOptions(ChatToolCall toolCall)
+    // Reads a final message written to ReplyFormat. False means it isn't one, so the caller falls back.
+    private static bool TryParseReply(string? json, out string reply, out List<string>? quickReplies)
     {
+        reply = string.Empty;
+        quickReplies = null;
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return false;
+        }
+
         try
         {
-            var root = JsonDocument.Parse(toolCall.FunctionArguments.ToString()).RootElement;
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+
+            // GetString tolerates a root that isn't an object, so TryGetProperty below is safe once this passes.
+            var text = root.GetString("reply");
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            reply = StripMarkdown(text);
+
             if (root.TryGetProperty("options", out var array) && array.ValueKind == JsonValueKind.Array)
             {
                 var list = array.EnumerateArray()
@@ -324,14 +384,14 @@ public sealed partial class AiChatService : IAiChatService
                     .Select(x => StripMarkdown(x.GetString()!))
                     .Where(s => !string.IsNullOrWhiteSpace(s))
                     .ToList();
-                return list.Count > 0 ? list : null;
+                quickReplies = list.Count > 0 ? list : null;
             }
+
+            return true;
         }
         catch (JsonException)
         {
-            // Ignore malformed arguments — just show no quick-replies.
+            return false;
         }
-
-        return null;
     }
 }
