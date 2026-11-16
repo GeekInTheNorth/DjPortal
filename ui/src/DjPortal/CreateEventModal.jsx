@@ -93,6 +93,7 @@ function CreateEventModal({ show, prefill, onHide })
 
     const closeModal = () =>
     {
+        resetAiState();
         if (isControlled)
         {
             onHide?.();
