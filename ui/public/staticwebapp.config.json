@@ -9,6 +9,18 @@
       "allowedRoles": ["authenticated"]
     },
     {
+      "route": "/import.html",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/import",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/import/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
       "route": "/api/events/create",
       "allowedRoles": ["authenticated"]
     },

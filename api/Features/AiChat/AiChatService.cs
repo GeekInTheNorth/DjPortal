@@ -1,8 +1,7 @@
 using System.ClientModel;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Azure;
-using Azure.AI.OpenAI;
+using DjPortalApi.Features.Common;
 using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Requests;
 using Microsoft.Extensions.Configuration;
@@ -80,20 +79,7 @@ public sealed partial class AiChatService : IAiChatService
         _tools = tools;
         _requestRepository = requestRepository;
         _logger = logger;
-
-        var endpoint = configuration.GetValue<string>("AzureOpenAiEndpoint");
-        var apiKey = configuration.GetValue<string>("AzureOpenAiApiKey");
-        var deployment = configuration.GetValue<string>("AzureOpenAiDeployment");
-
-        if (!string.IsNullOrWhiteSpace(endpoint) && !string.IsNullOrWhiteSpace(apiKey) && !string.IsNullOrWhiteSpace(deployment)
-            && Uri.TryCreate(endpoint, UriKind.Absolute, out var endpointUri))
-        {
-            // Accept either the base resource endpoint or a Foundry project endpoint
-            // (…/api/projects/…) — AzureOpenAIClient needs just scheme + host.
-            var baseUri = new Uri(endpointUri, "/");
-            var client = new AzureOpenAIClient(baseUri, new AzureKeyCredential(apiKey));
-            _chatClient = client.GetChatClient(deployment);
-        }
+        _chatClient = AzureOpenAiChatClientFactory.Create(configuration);
     }
 
     public async Task<AiChatResponse> SendAsync(EventDetails eventDetails, Guid userId, bool isAuthenticated, IList<AiChatMessageModel> history, AiChatMode mode)

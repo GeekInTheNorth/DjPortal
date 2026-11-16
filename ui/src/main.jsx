@@ -7,6 +7,7 @@ import './App.css'
 import DjPortal from './DjPortal/DjPortal.jsx';
 import AdminTools from './DjPortal/AdminTools.jsx';
 import AdminEventList from './DjPortal/AdminEventList.jsx';
+import ImportEvents from './DjPortal/ImportEvents.jsx';
 import EventPageApp from './EventPageApp.jsx';
 import Contact from './Contact.jsx';
 
@@ -34,6 +35,15 @@ if (djAdminElement) {
         <AppProvider includeExpired>
             <AdminEventList />
             <AdminTools />
+        </AppProvider>
+    );
+}
+
+const djImportElement = document.getElementById('djimport');
+if (djImportElement) {
+    ReactDOM.createRoot(djImportElement).render(
+        <AppProvider>
+            <ImportEvents />
         </AppProvider>
     );
 }
