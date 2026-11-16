@@ -1,3 +1,5 @@
+using DjPortalApi.Features.Import.Models;
+
 namespace DjPortalApi.Features.Import;
 
 public interface IEventImportService

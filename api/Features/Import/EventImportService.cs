@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using DjPortalApi.Features.AiChat;
 using DjPortalApi.Features.Common;
+using DjPortalApi.Features.Import.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OpenAI.Chat;

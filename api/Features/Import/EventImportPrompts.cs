@@ -1,3 +1,5 @@
+using DjPortalApi.Features.Import.Models;
+
 namespace DjPortalApi.Features.Import;
 
 // Kept apart from EventImportService for the same reason as AiChatPrompts: the wording is tuned far more

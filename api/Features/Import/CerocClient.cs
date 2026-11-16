@@ -1,25 +1,19 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using DjPortalApi.Features.Import.Models;
 using HtmlAgilityPack;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace DjPortalApi.Features.Import;
 
 public sealed partial class CerocClient(
     IHttpClientFactory httpClientFactory,
-    IConfiguration configuration,
     ILogger<CerocClient> logger) : ICerocClient
 {
     public const string HttpClientName = "Ceroc";
 
     private const string CerocHost = "www.ceroc.com";
 
-    private const string DefaultPostcode = "Leeds";
-
-    private const int DefaultRadiusMiles = 25;
-
-    // Enough for the name, times, venue, description and prices without sending the footer boilerplate.
     private const int MaxPageTextLength = 6000;
 
     private static readonly Uri BaseUri = new($"https://{CerocHost}/");
@@ -47,19 +41,7 @@ public sealed partial class CerocClient(
 
     public async Task<IList<CerocEventListing>> GetFreestyleEventsAsync(CancellationToken cancellationToken = default)
     {
-        var postcode = configuration.GetValue<string>("CerocImportPostcode");
-        if (string.IsNullOrWhiteSpace(postcode))
-        {
-            postcode = DefaultPostcode;
-        }
-
-        var radius = configuration.GetValue<int?>("CerocImportRadiusMiles") ?? DefaultRadiusMiles;
-        if (radius <= 0)
-        {
-            radius = DefaultRadiusMiles;
-        }
-
-        var listingUrl = new Uri(BaseUri, $"27/41/events?filter=&radius={radius}&postcode={Uri.EscapeDataString(postcode.Trim())}");
+        var listingUrl = new Uri(BaseUri, $"/27/41/events?filter=&radius=25&postcode=Leeds#search_events");
         var html = await GetHtmlAsync(listingUrl, cancellationToken);
 
         var document = new HtmlDocument();
