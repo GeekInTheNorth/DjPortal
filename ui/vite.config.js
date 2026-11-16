@@ -199,6 +199,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         djportal: resolve(__dirname, 'djportal.html'),
         admin: resolve(__dirname, 'admin.html'),
+        djimport: resolve(__dirname, 'import.html'),
         privacy: resolve(__dirname, 'privacy.html'),
         faq: resolve(__dirname, 'faq.html'),
         contact: resolve(__dirname, 'contact.html'),

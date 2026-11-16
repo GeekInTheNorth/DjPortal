@@ -83,9 +83,11 @@ api/
 │   │   ├── EventRepository.cs        # Azure Search persistence
 │   │   ├── IEventService.cs
 │   │   └── EventService.cs           # Business logic
+│   ├── Import/                        # Scrapes Ceroc listings and drafts events with Azure OpenAI
 │   ├── Requests/                      # Music request handling
 │   └── Tracks/                        # Track data management
 ├── EventsFunction.cs                  # HTTP trigger endpoints
+├── ImportFunction.cs                  # import/ceroc/list, import/ceroc/event and import/description (authenticated)
 ├── RequestsFunction.cs
 ├── TracksFunction.cs
 └── Program.cs                         # DI configuration
@@ -111,6 +113,7 @@ ui/
 ├── index.html                 # Public event listing page
 ├── djportal.html              # DJ portal page (authenticated)
 ├── admin.html                 # Admin page (authenticated)
+├── import.html                # Import Ceroc events page (authenticated, mounts ImportEvents.jsx)
 ├── src/
 │   ├── App.jsx                # Main app component with routing logic
 │   ├── AppContext.jsx         # Global state provider (events, requests, user)

@@ -92,3 +92,49 @@ Content-Type: application/json
 }
 
 ###
+
+### Import - list Ceroc Freestyle events (authenticated)
+GET {{rooturl}}/api/import/ceroc/list
+x-ms-client-principal: {{fakeprincipal}}
+
+### Import - list without authentication (expects 401)
+GET {{rooturl}}/api/import/ceroc/list
+
+### Import - draft an event from a Ceroc page (authenticated, calls Azure OpenAI)
+POST {{rooturl}}/api/import/ceroc/event
+Content-Type: application/json
+x-ms-client-principal: {{fakeprincipal}}
+
+{
+    "url":"https://www.ceroc.com/30/14294/energise-on-sunday"
+}
+
+### Import - non-Ceroc URL (expects 400)
+POST {{rooturl}}/api/import/ceroc/event
+Content-Type: application/json
+x-ms-client-principal: {{fakeprincipal}}
+
+{
+    "url":"https://example.com/"
+}
+
+###
+
+### Import - write a new description from the Create Event form (authenticated, calls Azure OpenAI)
+POST {{rooturl}}/api/import/description
+Content-Type: application/json
+x-ms-client-principal: {{fakeprincipal}}
+
+{
+    "name":"Ceroc Tadcaster - 2 Room Freestyle",
+    "description":"Two rooms of freestyle at Riley Smith Hall. Main room upbeat, second room blues and chill 9pm-11pm. £10 on the door.",
+    "locationName":"Tadcaster Riley Smith Hall",
+    "locationAddress":"Westgate, Tadcaster, LS24 9AB",
+    "date":"2026-12-11",
+    "times":"20:00 - 23:30",
+    "tags":"DJ Mark, Christmas, 2 Room",
+    "organizer":"Ceroc Yorkshire",
+    "isRequestable":true
+}
+
+###
