@@ -121,17 +121,14 @@ public sealed partial class CerocClient(
             .Where(line => line.Length > 0);
 
         var text = string.Join('\n', lines);
-        if (text.Length > MaxPageTextLength)
-        {
-            text = text[..MaxPageTextLength];
-        }
 
+        // Read the times from the full text first, so the cap on what the AI sees can never cut them off.
         var start = EventStart().Match(text);
         var end = EventEnd().Match(text);
 
         return new CerocEventPage
         {
-            Text = text,
+            Text = text.Length > MaxPageTextLength ? text[..MaxPageTextLength] : text,
             StartDate = start.Success ? ParseDate(start.Groups["date"].Value) : null,
             StartTime = start.Success ? ParseTime(start.Groups["time"].Value) : null,
             EndTime = end.Success ? ParseTime(end.Groups["time"].Value) : null

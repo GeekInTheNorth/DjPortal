@@ -20,6 +20,15 @@ const postcodeOf = (address) => (address ?? '').split(',').pop().replace(/\s+/g,
 // Typing an event name picks a venue by its name.
 const findVenueByName = (name) => KNOWN_VENUES.find((venue) => name.includes(venue.match));
 
+// A name-based guess only fills fields that are empty or still hold an earlier guess, so a venue or times
+// that were imported or typed by hand are never overwritten by editing the name.
+const isGuessableLocation = (locationName, locationAddress) =>
+    (!locationName.trim() && !locationAddress.trim())
+    || KNOWN_VENUES.some((venue) => venue.locationName === locationName && venue.locationAddress === locationAddress);
+
+const isGuessableTimes = (times) =>
+    !times.trim() || times === DEFAULT_TIMES || KNOWN_VENUES.some((venue) => venue.times === times);
+
 // Imported events are matched on postcode instead, so a "Tadcaster" event at a different hall keeps its own address.
 const findVenueByAddress = (address) => {
     const postcode = postcodeOf(address);
@@ -100,14 +109,20 @@ function CreateEventModal({ show, prefill, onHide })
         setEventName(value);
 
         const venue = findVenueByName(value);
-        if (venue)
+        if (!venue)
+        {
+            return;
+        }
+
+        if (isGuessableLocation(locationName, locationAddress))
         {
             setLocationName(venue.locationName);
             setLocationAddress(venue.locationAddress);
-            if (venue.times)
-            {
-                setEventTimes(venue.times);
-            }
+        }
+
+        if (venue.times && isGuessableTimes(eventTimes))
+        {
+            setEventTimes(venue.times);
         }
     }
 
