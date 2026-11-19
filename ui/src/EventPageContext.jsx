@@ -8,6 +8,7 @@ export const EventPageProvider = ({ children }) => {
     const eventData = window.__EVENT_DATA__ || {};
     const [selectedEvent, setSelectedEvent] = useState(eventData);
     const [requestCollection, setRequestCollection] = useState([]);
+    const [requestsLoaded, setRequestsLoaded] = useState(false);
     const [eventCollection, setEventCollection] = useState(eventData.id ? [eventData] : []);
 
     useEffect(() => {
@@ -31,12 +32,14 @@ export const EventPageProvider = ({ children }) => {
 
     const getMusicRequests = async (event) => {
         setRequestCollection([]);
+        setRequestsLoaded(false);
 
         setTimeout(() => {
             axios.get(import.meta.env.VITE_APP_REQUESTS_LIST, { params: { eventId: event.id } })
                 .then((response) => {
                     if (response.data && Array.isArray(response.data)) {
                         setRequestCollection(response.data);
+                        setRequestsLoaded(true);
                     } else {
                         console.error('Invalid music request data.');
                     }
@@ -52,7 +55,7 @@ export const EventPageProvider = ({ children }) => {
     const getEventCollection = () => {};
 
     return (
-        <AppContext.Provider value={{ eventCollection, selectedEvent, requestCollection, getEventCollection, selectEvent, deselectEvent, getMusicRequests }}>
+        <AppContext.Provider value={{ eventCollection, selectedEvent, requestCollection, requestsLoaded, getEventCollection, selectEvent, deselectEvent, getMusicRequests }}>
             {children}
         </AppContext.Provider>
     )

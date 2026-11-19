@@ -4,12 +4,18 @@ import { AppContext } from './AppContext.jsx';
 import { getRequestLink } from './requestLink.js';
 
 function RequestList() {
-  const { requestCollection } = useContext(AppContext);
+  const { requestCollection, requestsLoaded } = useContext(AppContext);
+  const hasNoRequests = requestsLoaded && (!requestCollection || requestCollection.length === 0);
 
   return (
     <Card className='my-3'>
       <Card.Header>Requested Tracks</Card.Header>
       <ListGroup variant="flush">
+        {hasNoRequests && (
+          <ListGroup.Item className='text-muted text-center py-3'>
+            No tracks requested yet. Be the first to make a request!
+          </ListGroup.Item>
+        )}
         {requestCollection && requestCollection.map((requestData, index) => {
           const linkUrl = getRequestLink(requestData);
           return (
