@@ -73,6 +73,12 @@
       }
     },
     {
+      "route": "/.well-known/mcp/*",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
       "route": "/.well-known/agent-skills/*",
       "headers": {
         "Access-Control-Allow-Origin": "*"

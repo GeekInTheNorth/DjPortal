@@ -46,3 +46,4 @@ The API is anonymous and needs no authentication. The full description is at htt
 
 - Each event has a page at `https://dj.stott.pro/events/<yyyy-MM-dd>` with a request form.
 - In a browser that supports WebMCP, dj.stott.pro registers `list_upcoming_events`, `search_tracks`, `list_event_requests` and `request_track` tools on the homepage and event pages.
+- The same four tools are on an MCP server at `https://dj.stott.pro/api/mcp` (Streamable HTTP, no authentication), described by the server card at `https://dj.stott.pro/api/mcp/server-card`. MCP clients don't keep cookies, so `request_track` returns a `requestorId` instead: pass it back on that dancer's later calls to keep their requests together.

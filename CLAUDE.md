@@ -85,10 +85,12 @@ api/
 │   │   ├── IEventService.cs
 │   │   └── EventService.cs           # Business logic
 │   ├── Import/                        # Scrapes Ceroc listings and drafts events with Azure OpenAI
+│   ├── Mcp/                           # MCP server: protocol handling, tools, server identity
 │   ├── Requests/                      # Music request handling
 │   └── Tracks/                        # Track data management
 ├── EventsFunction.cs                  # HTTP trigger endpoints
 ├── ImportFunction.cs                  # import/ceroc/list, import/ceroc/event and import/description (authenticated)
+├── McpFunction.cs                     # mcp (MCP endpoint) and mcp/server-card (anonymous)
 ├── RequestsFunction.cs
 ├── TracksFunction.cs
 └── Program.cs                         # DI configuration
@@ -162,6 +164,8 @@ The public site publishes discovery files for AI agents. They describe only the 
 - `.well-known/agent-skills/<name>/SKILL.md`: agent skills. The `index.json` beside them is generated at build time, so never write it by hand
 - `Link` headers on `/` and CORS headers on the discovery files are set in [staticwebapp.config.json](ui/public/staticwebapp.config.json)
 - [webmcp.js](ui/src/webmcp.js): WebMCP tools, registered on the homepage by [home.js](ui/src/home.js) and on event pages by [main.jsx](ui/src/main.jsx)
+- MCP server at `/api/mcp` ([McpFunction.cs](api/McpFunction.cs), logic in `api/Features/Mcp/`): the same four tools as WebMCP, always run as a visitor. It speaks MCP 2026-07-28 and the older `initialize`-based versions (2025-03-26 to 2025-11-25), statelessly, with JSON responses only. MCP clients don't keep cookies, so `request_track` returns a `requestorId` that stands in for the requestor cookie
+- MCP Server Card at `/api/mcp/server-card`, built from [McpServerInfo.cs](api/Features/Mcp/McpServerInfo.cs) and listed in the ai-catalog. [.well-known/mcp/server-card.json](ui/public/.well-known/mcp/server-card.json) is a compatibility copy in the older SEP-1649 shape, which scanners such as isitagentready.com probe. It is static, so keep its name and version in step with McpServerInfo.cs
 
 ### Configuration
 

@@ -3,6 +3,7 @@ using DjPortalApi.Features.Contact;
 using DjPortalApi.Features.Deployment;
 using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Import;
+using DjPortalApi.Features.Mcp;
 using DjPortalApi.Features.Requests;
 using DjPortalApi.Features.Tracks;
 using DjPortalApi.Features.WebSearch;
@@ -33,7 +34,9 @@ builder.Services
     .AddScoped<IAiChatTools, AiChatTools>()
     .AddScoped<IAiChatService, AiChatService>()
     .AddScoped<ICerocClient, CerocClient>()
-    .AddScoped<IEventImportService, EventImportService>();
+    .AddScoped<IEventImportService, EventImportService>()
+    .AddScoped<IMcpTools, McpTools>()
+    .AddScoped<IMcpServer, McpServer>();
 
 // Ceroc pages are fetched on the DJ's behalf, so the client is kept on a short leash: a timeout, a size cap,
 // and no redirects, so a link can never bounce the server off to another site.

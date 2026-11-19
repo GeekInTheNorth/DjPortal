@@ -54,6 +54,81 @@ public sealed class RequestService(IRequestRepository requestRepository, IEventS
         return CreateResult.Created(newRequest);
     }
 
+    public async Task<IList<MusicRequest>> ListAsync(Guid eventId, Guid userId, bool isAuthenticated)
+    {
+        var requests = await requestRepository.Get(eventId);
+        var uniqueRequests = requests
+            .Distinct(new MusicRequestComparer())
+            .OrderBy(x => x.StatusOrder)
+            .ThenBy(x => x.UserName)
+            .ThenBy(x => x.TrackName)
+            .ToList();
+
+        return isAuthenticated ? uniqueRequests : FilterForVisitor(uniqueRequests, userId).ToList();
+    }
+
+    private static IEnumerable<MusicRequest> FilterForVisitor(IList<MusicRequest> requests, Guid userId)
+    {
+        var dancingNames = new List<string>
+        {
+            "Ballroom Ghost",
+            "Dancefloor Poet",
+            "Dancing Queen",
+            "Disco Voyager",
+            "Groove Bandit",
+            "Harmony Rebel",
+            "Moonlight Mover",
+            "Midnight Rider",
+            "Rhythm Renegade",
+            "Son of a Preacher Man",
+            "Spin Me Slowly",
+            "Sweet Caroline",
+            "Sweet Child of Mine",
+            "The One & Only",
+            "Tiny Dancer"
+        };
+
+        dancingNames.Shuffle();
+        var userIds = requests.Select(x => x.UserId).Distinct();
+        var names = new Dictionary<Guid, string>();
+        var item = 0;
+
+        foreach (var userGuid in userIds)
+        {
+            if (Equals(userId, userGuid))
+            {
+                names.Add(userGuid, "You");
+            }
+            else
+            {
+                names.Add(userGuid, dancingNames[item]);
+                item++;
+            }
+
+            if (item >= dancingNames.Count)
+            {
+                item = 0;
+            }
+        }
+
+        // Non-authenticated users should only see obfuscated names
+        // Unapproved requests should be anonymised except to the requester
+        foreach (var request in requests)
+        {
+            request.UserName = names.TryGetValue(request.UserId, out var dancerName) ? dancerName : request.UserName.Obfuscate();
+
+            if (string.Equals(RequestStatus.Pending.ToString(), request.Status) && !Equals(userId, request.UserId))
+            {
+                request.TrackName = "Pending Approval";
+            }
+
+            // Visitors never see user ids, including their own - "You" already marks their requests.
+            request.UserId = Guid.Empty;
+
+            yield return request;
+        }
+    }
+
     /// <summary>
     /// A request that is nothing but a URL is stored as a link, with the track name replaced by the
     /// domain so the DJ can see where it points without following it.

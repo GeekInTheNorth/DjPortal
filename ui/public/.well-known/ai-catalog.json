@@ -19,6 +19,18 @@
       ]
     },
     {
+      "identifier": "urn:air:dj.stott.pro:mcp:music-requests",
+      "displayName": "DJ Mark Music Requests MCP server",
+      "description": "Anonymous MCP server with tools to list DJ Mark's upcoming Ceroc events, search his music library and send song requests.",
+      "type": "application/mcp-server-card+json",
+      "url": "https://dj.stott.pro/api/mcp/server-card",
+      "representativeQueries": [
+        "connect to DJ Mark's music request MCP server",
+        "request a song for a Ceroc freestyle using MCP tools",
+        "which events is DJ Mark playing at next"
+      ]
+    },
+    {
       "identifier": "urn:air:dj.stott.pro:skill:request-a-track",
       "displayName": "Request a track from DJ Mark",
       "description": "Step-by-step instructions for finding an event and sending DJ Mark a song request on a dancer's behalf.",
