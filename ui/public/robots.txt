@@ -1,4 +1,6 @@
 User-agent: *
+Content-Signal: ai-train=no, search=yes, ai-input=yes
 Disallow: /contact
 
 Sitemap: https://dj.stott.pro/sitemap.xml
+Agentmap: https://dj.stott.pro/.well-known/ai-catalog.json

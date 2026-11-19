@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { AppContext } from './AppContext.jsx';
+import { REQUEST_CREATED_EVENT } from './webmcp.js';
 
 export const EventPageProvider = ({ children }) => {
 
@@ -12,10 +13,22 @@ export const EventPageProvider = ({ children }) => {
     const [eventCollection, setEventCollection] = useState(eventData.id ? [eventData] : []);
 
     useEffect(() => {
-        if (eventData.id) {
-            refreshEvent(eventData.id);
-            getMusicRequests(eventData);
+        if (!eventData.id) {
+            return;
         }
+
+        refreshEvent(eventData.id);
+        getMusicRequests(eventData);
+
+        // A WebMCP agent can submit a request without going through the form, so refresh the list when it does.
+        const handleRequestCreated = (event) => {
+            if (event.detail?.eventId === eventData.id) {
+                getMusicRequests(eventData);
+            }
+        };
+
+        window.addEventListener(REQUEST_CREATED_EVENT, handleRequestCreated);
+        return () => window.removeEventListener(REQUEST_CREATED_EVENT, handleRequestCreated);
     }, []);
 
     const refreshEvent = async (eventId) => {

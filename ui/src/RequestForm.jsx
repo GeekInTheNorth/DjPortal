@@ -127,6 +127,9 @@ function RequestForm() {
         } catch (error) {
             if (error.response && error.response.status === 409) {
                 setErrorMessage(error.response.data?.message || 'You have reached the maximum number of requests for this event.');
+            } else if (error.response?.status === 400 && error.response.data?.message) {
+                // The DJ closed requests while the page was open, or the event has gone.
+                setErrorMessage(error.response.data.message);
             } else {
                 console.error('Error submitting request', error);
             }

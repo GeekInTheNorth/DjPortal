@@ -66,6 +66,7 @@ The build process automatically:
 - Bundles React app and outputs to `ui/dist/static/` with hashed filenames
 - Injects correct hashed filenames into all HTML files
 - Copies static assets from `ui/public/` to `ui/dist/`
+- Generates `/.well-known/agent-skills/index.json` with a SHA-256 digest of each SKILL.md ([generate-agent-skills-index.js](ui/scripts/generate-agent-skills-index.js))
 
 ## Architecture
 
@@ -149,6 +150,18 @@ Configured in [src/staticwebapp.config.json](src/staticwebapp.config.json):
 - Protected routes require `authenticated` role
 - Admin operations (create/update/delete events) are restricted
 - Unauthenticated requests to protected routes redirect to login
+
+### Agent Discovery
+
+The public site publishes discovery files for AI agents. They describe only the anonymous, visitor-facing API (events, track search, requests) - never the admin, import, contact or AI chat endpoints.
+
+- [robots.txt](ui/public/robots.txt): `Content-Signal` preferences and an `Agentmap` pointing at the ARD catalogue
+- [openapi.json](ui/public/openapi.json): OpenAPI 3.1 description of the public API. Update it when those endpoints or their models change
+- [.well-known/api-catalog.json](ui/public/.well-known/api-catalog.json): RFC 9727 API catalogue, served at `/.well-known/api-catalog` as `application/linkset+json` by a rewrite in [staticwebapp.config.json](ui/public/staticwebapp.config.json)
+- [.well-known/ai-catalog.json](ui/public/.well-known/ai-catalog.json): ARD capability manifest
+- `.well-known/agent-skills/<name>/SKILL.md`: agent skills. The `index.json` beside them is generated at build time, so never write it by hand
+- `Link` headers on `/` and CORS headers on the discovery files are set in [staticwebapp.config.json](ui/public/staticwebapp.config.json)
+- [webmcp.js](ui/src/webmcp.js): WebMCP tools, registered on the homepage by [home.js](ui/src/home.js) and on event pages by [main.jsx](ui/src/main.jsx)
 
 ### Configuration
 

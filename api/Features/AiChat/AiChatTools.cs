@@ -89,7 +89,7 @@ public sealed class AiChatTools(
                 };
 
                 var result = await requestService.CreateAsync(eventDetails.Id, userId, isAuthenticated, model);
-                if (result.Outcome == CreateRequestOutcome.QuotaExceeded)
+                if (result.Outcome != CreateRequestOutcome.Created)
                 {
                     return Result(new { success = false, error = result.Message });
                 }

@@ -19,12 +19,14 @@ async function fetchEvents() {
     return response.json();
 }
 
-function extractAssetRefs(indexHtml) {
-    const scriptMatch = indexHtml.match(/<script type="module" crossorigin src="([^"]+)"/);
-    const cssMatch = indexHtml.match(/<link rel="stylesheet" crossorigin href="([^"]+)"/);
+function extractAssetRefs(builtHtml) {
+    // Vite can emit more than one module script for an entry (for example a shared chunk that carries its
+    // modulepreload polyfill), so keep every one of them, in order, rather than assuming the first is the app.
+    const jsPaths = [...builtHtml.matchAll(/<script type="module" crossorigin src="([^"]+)"/g)].map(match => match[1]);
+    const cssMatch = builtHtml.match(/<link rel="stylesheet" crossorigin href="([^"]+)"/);
 
     return {
-        jsPath: scriptMatch ? scriptMatch[1] : null,
+        jsPaths,
         cssPath: cssMatch ? cssMatch[1] : null,
     };
 }
@@ -191,9 +193,9 @@ function generateEventPageHtml(event, assetRefs) {
         : '';
     const requestApp = isPast ? '' : '<div id="eventpage"></div>';
     const eventDataScript = isPast ? '' : `<script>window.__EVENT_DATA__ = ${escapeJsonForScript(event)};</script>`;
-    const bundleScript = !isPast && assetRefs.jsPath
-        ? `<script type="module" crossorigin src="${assetRefs.jsPath}"></script>`
-        : '';
+    const bundleScript = isPast
+        ? ''
+        : assetRefs.jsPaths.map(jsPath => `<script type="module" crossorigin src="${jsPath}"></script>`).join('\n');
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -317,19 +319,19 @@ async function main() {
     }
 
     // Extract asset references from djportal.html (which still has React)
-    // since index.html is now static-only
+    // since index.html only carries the lightweight WebMCP script
     const djportalHtmlPath = path.join(DIST_DIR, 'djportal.html');
     const djportalHtml = fs.readFileSync(djportalHtmlPath, 'utf-8');
     const assetRefs = extractAssetRefs(djportalHtml);
 
-    if (!assetRefs.jsPath) {
+    if (assetRefs.jsPaths.length === 0) {
         console.warn('Warning: Could not find JS asset reference in djportal.html');
     }
     if (!assetRefs.cssPath) {
         console.warn('Warning: Could not find CSS asset reference in djportal.html');
     }
 
-    console.log(`Assets: JS=${assetRefs.jsPath}, CSS=${assetRefs.cssPath}`);
+    console.log(`Assets: JS=${assetRefs.jsPaths.join(', ')}, CSS=${assetRefs.cssPath}`);
 
     // Fetch every event, including historic ones - they each keep a page. Only upcoming events
     // belong in the sitemap and the homepage listing, and the API's isExpired flag decides which

@@ -50,6 +50,11 @@ public class MusicRequestFunction(
         var isAuthenticated = user is { IsAuthenticated: true };
 
         var result = await requestService.CreateAsync(eventId, userId, isAuthenticated, model);
+        if (result.Outcome == CreateRequestOutcome.InvalidEvent)
+        {
+            return await CreateResponseAsync(req, System.Net.HttpStatusCode.BadRequest, new { message = result.Message }, !existingUserCookie, userId);
+        }
+
         if (result.Outcome == CreateRequestOutcome.QuotaExceeded)
         {
             return await CreateResponseAsync(req, System.Net.HttpStatusCode.Conflict, new { message = result.Message }, !existingUserCookie, userId);
@@ -178,6 +183,9 @@ public class MusicRequestFunction(
             {
                 request.TrackName = "Pending Approval";
             }
+
+            // Visitors never see user ids, including their own - "You" already marks their requests.
+            request.UserId = Guid.Empty;
 
             yield return request;
         }

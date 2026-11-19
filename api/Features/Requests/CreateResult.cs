@@ -3,7 +3,8 @@ namespace DjPortalApi.Features.Requests;
 public enum CreateRequestOutcome
 {
     Created,
-    QuotaExceeded
+    QuotaExceeded,
+    InvalidEvent
 }
 
 public sealed class CreateResult
@@ -23,6 +24,12 @@ public sealed class CreateResult
     public static CreateResult QuotaExceeded(string message) => new()
     {
         Outcome = CreateRequestOutcome.QuotaExceeded,
+        Message = message
+    };
+
+    public static CreateResult InvalidEvent(string message) => new()
+    {
+        Outcome = CreateRequestOutcome.InvalidEvent,
         Message = message
     };
 }

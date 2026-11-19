@@ -10,6 +10,9 @@ public sealed class MusicRequest
 
     public Guid EventId { get; set; }
 
+    // The user id is the value of the requestor cookie, so anyone who saw it could pose as that dancer.
+    // Visitor responses clear it to Guid.Empty and this leaves it out of the JSON; the DJ still gets it.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Guid UserId { get; set; }
 
     public string? UserName { get; set; }

@@ -1,11 +1,24 @@
+using DjPortalApi.Features.Events;
 using DjPortalApi.Features.Extensions;
 
 namespace DjPortalApi.Features.Requests;
 
-public sealed class RequestService(IRequestRepository requestRepository) : IRequestService
+public sealed class RequestService(IRequestRepository requestRepository, IEventService eventService) : IRequestService
 {
     public async Task<CreateResult> CreateAsync(Guid eventId, Guid userId, bool isAuthenticated, MusicRequestModel model)
     {
+        var eventDetails = await eventService.Get(eventId);
+        if (eventDetails is null)
+        {
+            return CreateResult.InvalidEvent("That event could not be found.");
+        }
+
+        // The DJ can add tracks to any event via the portal form, so only dancers are held to IsRequestable.
+        if (!isAuthenticated && !eventDetails.IsRequestable)
+        {
+            return CreateResult.InvalidEvent("Requests are not currently open for this event.");
+        }
+
         // Customers (never authenticated) can only request a limited number of tracks.
         if (!isAuthenticated)
         {
