@@ -1,0 +1,20 @@
+{
+  "serverInfo": {
+    "name": "pro.stott.dj/music-requests",
+    "title": "DJ Mark Music Requests",
+    "version": "1.0.0"
+  },
+  "description": "Find DJ Mark's upcoming Ceroc events, search his music library and request songs.",
+  "documentationUrl": "https://dj.stott.pro/.well-known/agent-skills/request-a-track/SKILL.md",
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://dj.stott.pro/api/mcp"
+  },
+  "capabilities": {
+    "tools": {}
+  },
+  "authentication": {
+    "required": false,
+    "schemes": []
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DJ Mark Music Requests API",
+    "version": "1.0.0",
+    "summary": "Find DJ Mark's upcoming Ceroc events, search his music library and request tracks.",
+    "description": "Public, anonymous API behind https://dj.stott.pro. Dancers use it to find upcoming Ceroc Yorkshire events where DJ Mark is playing, search the tracks he carries, and send him song requests for an event.\n\nRequests are moderated: every new request starts as `Pending` and DJ Mark decides what to play. Each visitor may make up to 5 requests per event. A visitor is identified by the `cydjr.requestor` cookie that the API sets on first use, so send that cookie back on later calls to keep the same identity.\n\nThis API is for individual dancers and assistants acting on their behalf. Do not submit requests in bulk, or for anyone who has not asked you to.",
+    "contact": {
+      "name": "DJ Mark",
+      "url": "https://dj.stott.pro/contact"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://dj.stott.pro"
+    }
+  ],
+  "externalDocs": {
+    "description": "How to request a track (agent skill)",
+    "url": "https://dj.stott.pro/.well-known/agent-skills/request-a-track/SKILL.md"
+  },
+  "tags": [
+    { "name": "Events", "description": "Upcoming and past events where DJ Mark is playing." },
+    { "name": "Tracks", "description": "DJ Mark's music library." },
+    { "name": "Requests", "description": "Song requests for an event." }
+  ],
+  "paths": {
+    "/api/events/list/": {
+      "get": {
+        "tags": ["Events"],
+        "operationId": "listEvents",
+        "summary": "List events",
+        "description": "Returns events in date order. Cancelled events are never included, and past events are left out unless `includeExpired` is true.",
+        "parameters": [
+          {
+            "name": "includeExpired",
+            "in": "query",
+            "required": false,
+            "description": "Include events whose date has passed.",
+            "schema": { "type": "boolean", "default": false }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The events.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Event" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events/byid/{id}": {
+      "get": {
+        "tags": ["Events"],
+        "operationId": "getEvent",
+        "summary": "Get one event",
+        "parameters": [
+          { "$ref": "#/components/parameters/EventIdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "The event.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Event" }
+              }
+            }
+          },
+          "404": { "description": "No event has that id." }
+        }
+      }
+    },
+    "/api/events/getinvite/{id}/dance-event.ics": {
+      "get": {
+        "tags": ["Events"],
+        "operationId": "getEventCalendarInvite",
+        "summary": "Download a calendar invite for an event",
+        "parameters": [
+          { "$ref": "#/components/parameters/EventIdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "An iCalendar file for the event.",
+            "content": {
+              "text/calendar": {
+                "schema": { "type": "string" }
+              }
+            }
+          },
+          "404": { "description": "No event has that id." }
+        }
+      }
+    },
+    "/api/tracks/search/": {
+      "get": {
+        "tags": ["Tracks"],
+        "operationId": "searchTracks",
+        "summary": "Search DJ Mark's music library",
+        "description": "Full-text search over title, artist and album, filtered to a BPM range. Returns at most 10 tracks, and an empty array when `query` is empty. Dancers may request tracks that are not in the library; picking one from here just gives DJ Mark the exact track, BPM and length.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "description": "Words from the title, artist or album.",
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          {
+            "name": "lowBpm",
+            "in": "query",
+            "required": false,
+            "description": "Lowest BPM to include.",
+            "schema": { "type": "number", "default": 100 }
+          },
+          {
+            "name": "highBpm",
+            "in": "query",
+            "required": false,
+            "description": "Highest BPM to include.",
+            "schema": { "type": "number", "default": 150 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching tracks, best match first.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "maxItems": 10, "items": { "$ref": "#/components/schemas/Track" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/musicrequest/list/": {
+      "get": {
+        "tags": ["Requests"],
+        "operationId": "listRequests",
+        "summary": "List the requests for an event",
+        "description": "Other dancers' names are replaced with pseudonyms and the caller's own requests are labelled \"You\". The track name of another dancer's request is hidden as \"Pending Approval\" until DJ Mark approves it. Returns an empty array when `eventId` is missing or not a GUID.",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requests for the event.",
+            "headers": {
+              "Set-Cookie": { "$ref": "#/components/headers/RequestorCookie" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MusicRequest" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/musicrequest/create/": {
+      "post": {
+        "tags": ["Requests"],
+        "operationId": "createRequest",
+        "summary": "Request a track for an event",
+        "description": "Only request for events where `isRequestable` is true, and only when a dancer has asked for the track. Each visitor may make up to 5 requests per event.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewMusicRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The request was saved and is waiting for DJ Mark to approve it. The body is empty.",
+            "headers": {
+              "Set-Cookie": { "$ref": "#/components/headers/RequestorCookie" }
+            }
+          },
+          "400": {
+            "description": "`eventId` is not a GUID, or `musicRequest` or `requestedBy` is empty (empty body). Or the event does not exist or is not taking requests (body says which).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "examples": ["Requests are not currently open for this event."] }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The visitor has already made the maximum number of requests for this event.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "examples": ["You may only make 5 requests per event, DJ Mark will select one to play"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "EventIdPath": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string", "format": "uuid" }
+      }
+    },
+    "headers": {
+      "RequestorCookie": {
+        "description": "Sets `cydjr.requestor`, which identifies the visitor for the per-event request limit. Only sent when the request did not already carry the cookie.",
+        "schema": { "type": "string" }
+      }
+    },
+    "schemas": {
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "description": { "type": "string", "description": "Plain text, may contain emoji." },
+          "date": { "type": "string", "format": "date-time", "description": "The event date at midnight UTC." },
+          "startTime": { "type": "string", "description": "Local UK start time, ISO 8601 without an offset." },
+          "endTime": { "type": "string", "description": "Local UK end time, ISO 8601 without an offset." },
+          "times": { "type": "string", "examples": ["20:00 - 23:30"] },
+          "locationName": { "type": "string" },
+          "locationAddress": { "type": "string" },
+          "streetAddress": { "type": ["string", "null"] },
+          "addressLocality": { "type": ["string", "null"] },
+          "postalCode": { "type": ["string", "null"] },
+          "addressCountry": { "type": "string", "examples": ["GB"] },
+          "isRequestable": { "type": "boolean", "description": "True when DJ Mark is accepting song requests for this event." },
+          "isCancelled": { "type": "boolean" },
+          "isExpired": { "type": "boolean", "description": "True when the event date has passed." },
+          "eventPageUrl": { "type": "string", "format": "uri" },
+          "calendarInviteUrl": { "type": "string", "format": "uri" },
+          "facebookEventUrl": { "type": ["string", "null"], "format": "uri" },
+          "organizer": { "type": ["string", "null"] },
+          "djs": { "type": "array", "items": { "type": "string" } },
+          "tagList": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "colour": { "type": "string" }
+              }
+            }
+          },
+          "imageUrl": { "type": "string", "format": "uri" }
+        }
+      },
+      "Track": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "artist": { "type": "string" },
+          "album": { "type": ["string", "null"] },
+          "time": { "type": ["string", "null"], "description": "Length as mm:ss.", "examples": ["03:45"] },
+          "bpm": { "type": "number" },
+          "key": { "type": ["string", "null"] },
+          "summary": { "type": "string", "description": "\"Title, Artist\" - the form to use as `musicRequest`." }
+        }
+      },
+      "MusicRequest": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "eventId": { "type": "string", "format": "uuid" },
+          "userName": { "type": "string", "description": "A pseudonym, or \"You\" for the caller's own requests." },
+          "trackName": { "type": "string" },
+          "status": { "type": "string", "enum": ["Pending", "Approved", "Queued", "Played", "AlreadyServed"] },
+          "bpm": { "type": "number" },
+          "time": { "type": ["string", "null"] },
+          "timing": { "type": "string", "description": "Length and BPM, e.g. \"03:45 (128)\", or empty." }
+        }
+      },
+      "NewMusicRequest": {
+        "type": "object",
+        "required": ["eventId", "musicRequest", "requestedBy"],
+        "properties": {
+          "eventId": { "type": "string", "format": "uuid" },
+          "musicRequest": { "type": "string", "description": "The track as \"Title, Artist\". Use a track's `summary` from the library search when there is a match.", "examples": ["Sweet Caroline, Neil Diamond"] },
+          "requestedBy": { "type": "string", "description": "The dancer's first name, shown to DJ Mark." },
+          "bpm": { "type": "number", "description": "The track's BPM from the library search, or 0." },
+          "time": { "type": "string", "description": "The track's length from the library search, or an empty string." }
+        }
+      }
+    }
+  }
+}

@@ -138,3 +138,41 @@ x-ms-client-principal: {{fakeprincipal}}
 }
 
 ###
+
+###
+### MCP - server card
+GET {{rooturl}}/api/mcp/server-card
+
+### MCP - discover (2026-07-28: no handshake, version and capabilities on every request)
+POST {{rooturl}}/api/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+MCP-Protocol-Version: 2026-07-28
+Mcp-Method: server/discover
+
+{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}
+
+### MCP - search tracks (2026-07-28: Mcp-Name must match the tool name)
+POST {{rooturl}}/api/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+MCP-Protocol-Version: 2026-07-28
+Mcp-Method: tools/call
+Mcp-Name: search_tracks
+
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_tracks","arguments":{"query":"abba"},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}
+
+### MCP - initialize (older clients open with a handshake)
+POST {{rooturl}}/api/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{"jsonrpc":"2.0","id":3,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"rest-client","version":"1.0.0"}}}
+
+### MCP - list tools (older clients, after initialize)
+POST {{rooturl}}/api/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+MCP-Protocol-Version: 2025-11-25
+
+{"jsonrpc":"2.0","id":4,"method":"tools/list"}

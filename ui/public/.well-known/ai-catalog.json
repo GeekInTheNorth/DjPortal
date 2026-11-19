@@ -1,0 +1,46 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "DJ Mark",
+    "identifier": "did:web:dj.stott.pro"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:dj.stott.pro:api:music-requests",
+      "displayName": "DJ Mark Music Requests API",
+      "description": "Public API to list DJ Mark's upcoming Ceroc events in Leeds and Tadcaster, search his music library and send song requests for an event.",
+      "type": "application/vnd.oai.openapi+json",
+      "url": "https://dj.stott.pro/openapi.json",
+      "representativeQueries": [
+        "which Ceroc freestyles is DJ Mark playing at next",
+        "request Sweet Caroline for Friday's Ceroc event in Tadcaster",
+        "find a jive track around 125 BPM in DJ Mark's library",
+        "has my song request been played yet"
+      ]
+    },
+    {
+      "identifier": "urn:air:dj.stott.pro:mcp:music-requests",
+      "displayName": "DJ Mark Music Requests MCP server",
+      "description": "Anonymous MCP server with tools to list DJ Mark's upcoming Ceroc events, search his music library and send song requests.",
+      "type": "application/mcp-server-card+json",
+      "url": "https://dj.stott.pro/api/mcp/server-card",
+      "representativeQueries": [
+        "connect to DJ Mark's music request MCP server",
+        "request a song for a Ceroc freestyle using MCP tools",
+        "which events is DJ Mark playing at next"
+      ]
+    },
+    {
+      "identifier": "urn:air:dj.stott.pro:skill:request-a-track",
+      "displayName": "Request a track from DJ Mark",
+      "description": "Step-by-step instructions for finding an event and sending DJ Mark a song request on a dancer's behalf.",
+      "type": "text/markdown",
+      "url": "https://dj.stott.pro/.well-known/agent-skills/request-a-track/SKILL.md",
+      "representativeQueries": [
+        "ask the DJ to play a song at a Ceroc dance",
+        "send a song request for a Ceroc Yorkshire event",
+        "how do I request music from DJ Mark"
+      ]
+    }
+  ]
+}

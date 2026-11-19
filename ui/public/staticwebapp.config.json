@@ -51,10 +51,49 @@
     {
       "route": "/login",
       "redirect": "/.auth/login/github?post_login_redirect_uri=/djportal"
+    },
+    {
+      "route": "/",
+      "headers": {
+        "Link": "</.well-known/api-catalog>; rel=\"api-catalog\", </openapi.json>; rel=\"service-desc\"; type=\"application/vnd.oai.openapi+json\", </.well-known/agent-skills/request-a-track/SKILL.md>; rel=\"service-doc\"; type=\"text/markdown\", </.well-known/ai-catalog.json>; rel=\"ai-catalog\"; type=\"application/json\""
+      }
+    },
+    {
+      "route": "/.well-known/api-catalog",
+      "rewrite": "/.well-known/api-catalog.json",
+      "headers": {
+        "Content-Type": "application/linkset+json; profile=\"https://www.rfc-editor.org/info/rfc9727\"",
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/.well-known/ai-catalog.json",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/.well-known/mcp/*",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/.well-known/agent-skills/*",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/openapi.json",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
     }
   ],
   "mimeTypes": {
-    ".xml": "application/xml"
+    ".xml": "application/xml",
+    ".md": "text/markdown; charset=utf-8"
   },
   "responseOverrides": {
     "401": {

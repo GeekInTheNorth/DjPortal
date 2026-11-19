@@ -10,6 +10,7 @@ import AdminEventList from './DjPortal/AdminEventList.jsx';
 import ImportEvents from './DjPortal/ImportEvents.jsx';
 import EventPageApp from './EventPageApp.jsx';
 import Contact from './Contact.jsx';
+import { registerWebMcpTools } from './webmcp.js';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -53,6 +54,8 @@ if (eventPageElement) {
     ReactDOM.createRoot(eventPageElement).render(
         <EventPageApp />
     );
+
+    registerWebMcpTools({ eventId: window.__EVENT_DATA__?.id });
 }
 
 const contactElement = document.getElementById('contact');

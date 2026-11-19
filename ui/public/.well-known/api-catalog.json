@@ -1,0 +1,21 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://dj.stott.pro/api/",
+      "service-desc": [
+        {
+          "href": "https://dj.stott.pro/openapi.json",
+          "type": "application/vnd.oai.openapi+json",
+          "title": "DJ Mark Music Requests API (OpenAPI 3.1)"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://dj.stott.pro/.well-known/agent-skills/request-a-track/SKILL.md",
+          "type": "text/markdown",
+          "title": "How to request a track"
+        }
+      ]
+    }
+  ]
+}
